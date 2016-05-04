@@ -108,21 +108,21 @@ library(ggplot2)
 \section{Rough thoughts on the model}
 
 
-For a lineup of size $m$ let $X_i$ $i = 1, ..., m$ be the number of times that panel \#$i$ is identified as the most different out of $K$ evaluations (therefore $0 \le X_i \le K, \sum_i X_i = K$). Then the vector 
+For a lineup of size $m$ let $X_i$ $i = 1, ..., m$ be the number of times that panel \#$i$ is identified as the most different out of $K$ evaluations (therefore $0 \le X_i \le K, \sum_i X_i = K$). Then the vector
  $X = (X_1, ..., X_m)$ is distributed according to a Multinomial distribution with probability vector $p = (p_1, ..., p_m)$, i.e.\ $0 \le p_i \le 1, \sum_i p_i = 1$. $p$ is therefore an element of the $(m-1)$-dimensional simplex $S(m-1)$.
 
-We will assume that under the null distribution $p$ has a symmetric (aslo called \emph{flat}) Dirichlet distribution $Dir(\alpha)$, with $\alpha > 0$, i.e.\ all concentration rates $\alpha_i$ are identical. 
+We will assume that under the null distribution $p$ has a symmetric (aslo called \emph{flat}) Dirichlet distribution $Dir(\alpha)$, with $\alpha > 0$, i.e.\ all concentration rates $\alpha_i$ are identical.
 
-The density of a flat $Dir(\alpha)$ is given as 
+The density of a flat $Dir(\alpha)$ is given as
 \[
 f(p_1, ..., p_{m-1}; \alpha) = \frac{\Gamma(\alpha m)}{\Gamma(\alpha)^m} \prod_{i=1}^{m}p_i^{\alpha-1}.
 \]
-When $\alpha=1$, the symmetric Dirichlet distribution is the uniform distribution on the $(m-1)$ dimensional simplex. For $\alpha < 1$ the mass of the distribution is along the edges of the simplex, i.e.\ most values $p_i$ will be close to zero. For $\alpha > 1$ most values $p_i$ will be similar, with a mass in the middle of the simplex. 
-For all  Dirichlet distributions hold, that the margins $p_i$ are distributed according to a Beta distribution, which in the case of a symmetric Dirichlet distribution simplify to $p_i \sim \text{Beta}\left(\alpha, (m-1)\alpha\right)$. In the symmetric case, we also know that $E[p_i] = 1/m$, i.e.\ the expected value of the probability to pick panel \#$i$ only depends on the size $m$ of the lineup. 
+When $\alpha=1$, the symmetric Dirichlet distribution is the uniform distribution on the $(m-1)$ dimensional simplex. For $\alpha < 1$ the mass of the distribution is along the edges of the simplex, i.e.\ most values $p_i$ will be close to zero. For $\alpha > 1$ most values $p_i$ will be similar, with a mass in the middle of the simplex.
+For all  Dirichlet distributions hold, that the margins $p_i$ are distributed according to a Beta distribution, which in the case of a symmetric Dirichlet distribution simplify to $p_i \sim \text{Beta}\left(\alpha, (m-1)\alpha\right)$. In the symmetric case, we also know that $E[p_i] = 1/m$, i.e.\ the expected value of the probability to pick panel \#$i$ only depends on the size $m$ of the lineup.
 
 \hh{XXX what meaning does the rate $\alpha$ have in the lineup setting? I would like to be able to say that $m\alpha$ is the number of 'interesting' looking null plots that we see on average in a lineup of size $m$. }
 
-Figure~\ref{fig:simplex} shows examples of three Dirichlet distributions on $S(2)$ with different rates. 
+Figure~\ref{fig:simplex} shows examples of three Dirichlet distributions on $S(2)$ with different rates.
 
 \begin{figure}
 \begin{subfigure}[t]{\textwidth}
@@ -136,7 +136,7 @@ simplex$alphalabel <- factor(simplex$alpha)
 levels(simplex$alphalabel) <- c("alpha: 1/7", "alpha: 1", "alpha: 7")
 
 library(ggtern)
-ggtern::ggtern(aes(x=p1, y=p2, z=p3), data=simplex) + 
+ggtern::ggtern(aes(x=p1, y=p2, z=p3), data=simplex) +
   geom_point() + facet_wrap(~alphalabel, labeller="label_parsed") +
   theme_bw() +
   theme(panel.background=element_rect(colour="black"))
@@ -153,8 +153,8 @@ betas$density[is.infinite(betas$density)] <- 0
 betas <- rbind(betas, data.frame(p=0,alpha=1,density=0))
 betas$alphalabel <- factor(betas$alpha)
 levels(betas$alphalabel) <- expression("alpha: 1/7", "alpha: 1", "alpha: 7")
-qplot(data=betas, p, y=density, geom="polygon", fill=I("grey50"), alpha=I(.8), colour=I("grey20")) + 
-  ylab("density") + facet_wrap(~alphalabel, labeller="label_parsed") + ggplot2::theme_bw() 
+qplot(data=betas, p, y=density, geom="polygon", fill=I("grey50"), alpha=I(.8), colour=I("grey20")) +
+  ylab("density") + facet_wrap(~alphalabel, labeller="label_parsed") + ggplot2::theme_bw()
 @
 \end{subfigure}
 \caption{\label{fig:simplex}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$. The lines mark the boundaries of the $S(2)$ simplex. Bottom row: marginal distributions of each of the $X_i$.}
@@ -178,7 +178,7 @@ P(X_m = x \mid p_m) = {K \choose x} p_m^x (1-p_m)^{K-x}
 \hh{************************}
 
 \begin{eqnarray*}
-P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\ 
+P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\
 &=& {K \choose x} \int_0^1  p_m^x (1-p_m)^{K-x} f(p_m) dp_m \\
 &=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \int_0^1  p_m^x (1-p_m)^{K-x} p_m^{\alpha-1} (1-p_m)^{(m-1)\alpha-1} dp_m \\
 &=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)}  \int_0^1  p_m^{x+\alpha-1} (1-p_m)^{K-x + (m-1)\alpha-1} dp_m \\
@@ -214,14 +214,14 @@ xmDistr$prob <- with(xmDistr, choose(K,x)/beta(alpha, 19*alpha)*beta(x+alpha, K-
 xmDistr$binom <- with(xmDistr, dbinom(x, size=K, prob=1/20))
 xmDistr$alphalabel <- factor(xmDistr$alpha)
 levels(xmDistr$alphalabel) <- c("1/7", "1", "7")
-ggplot(data=xmDistr, aes(x=x, y=prob)) +  
-  facet_grid(.~K, scales="free_x", space="free_x", 
-             labeller="label_both") + theme_bw() + 
-  geom_segment(aes(x=x-.4, xend=x+.4, y=binom, yend=binom), 
-               colour="grey50") + 
-  geom_point(aes(colour=alphalabel)) + 
-  scale_colour_brewer("alpha", palette="Set2") + 
-  scale_x_continuous(breaks=0:15, minor_breaks=NULL) + 
+ggplot(data=xmDistr, aes(x=x, y=prob)) +
+  facet_grid(.~K, scales="free_x", space="free_x",
+             labeller="label_both") + theme_bw() +
+  geom_segment(aes(x=x-.4, xend=x+.4, y=binom, yend=binom),
+               colour="grey50") +
+  geom_point(aes(colour=alphalabel)) +
+  scale_colour_brewer("alpha", palette="Set2") +
+  scale_x_continuous(breaks=0:15, minor_breaks=NULL) +
   ylab("P(X = x)") +
   xlab("Number of data detections x") +
   ggplot2::theme_bw()
@@ -232,7 +232,7 @@ ggplot(data=xmDistr, aes(x=x, y=prob)) +
 
 \subsection{Scenario I}
 Let us assume that the lineups in the study are administered such that each lineup is only shown to one participant. This is only practical, if we have a way to `produce' data, i.e. we are in a situation where we can either use sampling or create data from a model.
-Then $X$, the number of times the data was identified from the lineup in $K$ independent evaluations, is given as the sum of Bernoulli variables $X_i$, such that 
+Then $X$, the number of times the data was identified from the lineup in $K$ independent evaluations, is given as the sum of Bernoulli variables $X_i$, such that
 $X = sum_{i=1}^K X_i$ with $X_i \mid p_i \sim \text{Binom}_{1, p_i}$.
 Then the distribution of $X$ is a Binomial distribution with parameters $K$ and $1/m$, because the $X_i$ are independent and identical with $p_i = 1/m$:
 \begin{eqnarray*}
@@ -263,16 +263,16 @@ bigelect$response_no <- unlist(response)
 bigelect$weight <- 1/bigelect$weight
 
 filler <- data.frame(expand.grid(
-  param_value=unique(bigelect$param_value), 
+  param_value=unique(bigelect$param_value),
   response_no=1:20))
 bigelect <- merge(bigelect, filler, by=c("param_value", "response_no"), all=TRUE)
 bigelect$weight[is.na(bigelect$weight)] <- 0
-bigelect <- bigelect %>% group_by(param_value) %>% 
+bigelect <- bigelect %>% group_by(param_value) %>%
   mutate(plot_location=na.omit(plot_location)[1])
 bigelect$correct <- with(bigelect, !(response_no!=plot_location))
 
 
-pars <- bigelect %>% filter(correct!=TRUE) %>% split(.$param_value) %>% 
+pars <- bigelect %>% filter(correct!=TRUE) %>% split(.$param_value) %>%
   purrr::map(.f = function(x) {
     dir <- tidyr::spread(x, key=response_no, value=weight, fill=0)
     sirt::dirichlet.mle(dir[,23:41])
@@ -300,11 +300,11 @@ xtable(ns, digits=c(0,0,0, 1, 4,4))
 \subsection{Empirical distribution of the number of null plot picks}
 
 <<probs-null, echo=FALSE, results='asis'>>=
-nulls <- bigelect %>% filter(!correct) %>% group_by(param_value, response_no) %>% 
+nulls <- bigelect %>% filter(!correct) %>% group_by(param_value, response_no) %>%
   summarize(
     pick = sum(weight, na.rm=T)
   )
-nulls <- nulls %>% group_by(param_value) %>% 
+nulls <- nulls %>% group_by(param_value) %>%
   mutate(
     n = sum(pick, na.rm=T)
   )
@@ -315,14 +315,14 @@ nulls$perc <- with(nulls, pick/n)
 null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0)
 one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
 one_par$alpha0/19
-ns$dirprob2 <- 1:nrow(ns) %>% 
+ns$dirprob2 <- 1:nrow(ns) %>%
   purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=one_par$alpha0/19)) %>% unlist()
 xtable(ns, digits=c(0,0,0,1,4,4,4))
 #nulls$dirprob <- 1:nrow(nulls) %>% purrr::map(.f=function(i) pval3(nulls$pick[i], K=nulls$n[i], alpha=nulls$alpha[i])) %>% unlist()
 #qplot(dirprob, data=nulls, binwidth=.035)
 @
 
-Minimum of $m-1$ (independent - violated!) uniformly distributed variables $X_i$ is 
+Minimum of $m-1$ (independent - violated!) uniformly distributed variables $X_i$ is
 \[
 P( \min_i X_i \le x) = 1 - (1-x)^{m-1}.
 \]
@@ -338,7 +338,7 @@ alphas <- tidyr::gather(ps, key=lineup, value=prob)
 ps2 <- pars %>% purrr::map_df(.f = function(x) names(x$xsi))
 names <- tidyr::gather(ps2, key=lineup, value=name)
 alphas$response_no <- names$name
-# not sure how the xsi relate to the probabilities ...  
+# not sure how the xsi relate to the probabilities ...
 qplot(param_value, perc, data=nulls) + theme_bw() + ylab("Probabilities p") +xlab("") +
   geom_label(aes(label=response_no), nudge_x=0.2, data=subset(nulls, perc > 0.15))
 
