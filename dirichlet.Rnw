@@ -186,11 +186,23 @@ P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\
 &=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(K+m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha + K-x)}{\Gamma((m-1)\alpha)} \cdot \frac{\Gamma(\alpha+x)}{\Gamma(\alpha)}  \\
 \end{eqnarray*}
 These probabilities are shown in Figure~\ref{fig:xm}. Depending on the rate $\alpha$ they are quite different from Binomial probabilities.
-But for large values of $\alpha$ the densities converge in distribution to the Binomial with parameters $K$ and probability of success $p = 1/m$, because \hh{Tritz, das ist Deines - ich bin mir sicher, dass es stimmt, aber es ist echt eklig - koenntest Du Dich darum kuemmern?}
+But for large values of $\alpha$ the densities converge in distribution to the Binomial with parameters $K$ and probability of success $p = 1/m$, because we can write $\Gamma(x + \alpha) = \prod_{i=0}^{x-1}(x + \alpha) \Gamma(\alpha)$ for any non-negative integer $x \ge 0$. Therefore the probability for  $x$ data detections becomes
 \begin{eqnarray*}
-\lim_{\alpha \to \infty} P(X_m = x) = \lim_{\alpha \to \infty} {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right) }{B\left(\alpha, (m-1)\alpha\right) } =
- {K \choose x} \left(\frac{1}{m}\right)^x \left(1-\frac{1}{m}\right)^{K-x}
+P(X_m = x) &=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(m\alpha) \prod_{i=0}^{K-1} (i + m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha) \prod_{i=0}^{K-x-1} ((m-1)\alpha + i)}{\Gamma((m-1)\alpha)} \cdot \\
+&& \frac{\Gamma(\alpha) \prod_{i=0}^{x-1} (\alpha + i)}{\Gamma(\alpha)} \\
+&=& {K \choose x} \frac{\prod_{i=0}^{K-x-1} ((m-1)\alpha + i) \prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{K-1} (i + m\alpha)} \\
+&=& {K \choose x} \frac{\prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{x-1} (i + m\alpha)} \cdot 
+\frac{\prod_{i=0}^{K-x-1} ((m-1)\alpha + i) }{\prod_{i=x}^{K-1} (i + m\alpha)} \\
+&=&  {K \choose x} \prod_{i=0}^{x-1} \frac{\alpha + i}{m\alpha + i} \cdot 
+\prod_{i=0}^{K-x-1} \frac{(m-1)\alpha + i}{ m\alpha + i+x }
 \end{eqnarray*}
+In the situation that the concentration parameter goes to infinity, the limiting distribution is therefore Binomial:
+\begin{eqnarray*}
+\lim_{\alpha \to \infty} P(X_m = x) &=& \lim_{\alpha \to \infty} {K \choose x} \prod_{i=0}^{x-1} \underbrace{\frac{\alpha + i}{m\alpha + i}}_{\to \frac{1}{m} \text{ for } \alpha \to \infty } \cdot 
+\prod_{i=0}^{K-x-1} \underbrace{\frac{(m-1)\alpha + i}{ m\alpha + i+x }}_{\to \frac{m-1}{m} \text{ for } \alpha \to \infty } \\
+&=& {K \choose x} \left(\frac{1}{m}\right)^x \left(1 - \frac{1}{m}\right)^{K-x}
+\end{eqnarray*}
+
 
 
 \hh{What is the expected value of $X_m$? - that might give us a nice interpretation of $\alpha$.}
@@ -253,6 +265,7 @@ Scenario II is the situation, where we keep the same data plot in the lineup, bu
 \section{Estimating the concentration parameter}
 
 <<ex-elect, echo=FALSE>>=
+# needs to be put into data folder - but please don't put this data onto the repo
 raw11 <- read.csv("data/raw_data_turk11.csv", stringsAsFactors = FALSE)
 elect <- raw11[grep("electoral", as.character(raw11$param_value)),]
 library(dplyr)
