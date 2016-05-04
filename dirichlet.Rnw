@@ -1,0 +1,352 @@
+\documentclass[12pt]{article}
+% \usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+% \geometry{letterpaper}                   % ... or a4paper or a5paper or ...
+%\usepackage{graphicx}
+\usepackage[font=small,skip=5pt]{caption}
+\usepackage{subcaption}
+\usepackage{afterpage}
+\usepackage{amssymb}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+% \usepackage{color}
+\usepackage{multirow}
+\usepackage{rotating}
+\usepackage[dvipsnames,svgnames,table]{xcolor}
+\usepackage{hyperref}
+\graphicspath{{figure/}}
+% \usepackage{endfloat} % Figures to the end of the document
+
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+%---------------------------------------------------
+%                 Editing Commands
+\newcommand{\hh}[1]{{\color{magenta} #1}}
+\newcommand{\cgj}[1]{{\color{orange} #1}}
+\newcommand{\dc}[1]{{\color{cyan} #1}}
+
+%---------------------------------------------------
+%                 Placing Figures
+
+
+%---------------------------------------------------
+% Define new environment
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{algorithm}[theorem]{Algorithm}
+%---------------------------------------------------
+
+%\pdfminorversion=4
+% NOTE: To produce blinded version, replace "0" with "1" below.
+\newcommand{\blind}{0}
+
+% DON'T change margins - should be 1 inch all around.
+\addtolength{\oddsidemargin}{-.5in}%
+\addtolength{\evensidemargin}{-.5in}%
+\addtolength{\textwidth}{1in}%
+\addtolength{\textheight}{1.3in}%
+\addtolength{\topmargin}{-.8in}%
+
+
+\begin{document}
+
+%\bibliographystyle{natbib}
+
+\def\spacingset#1{\renewcommand{\baselinestretch}%
+{#1}\small\normalsize} \spacingset{1}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\if0\blind
+{
+  \title{\bf Visual inference on different lineup scenarios}
+  \author{Heike Hofmann, Christian R\"ottger, Dianne Cook \thanks{
+    The authors gratefully acknowledge funding from the National Science Foundation Grant \# DMS 1007697. All data collection has been conducted with approval from the Institutional Review Board IRB 10-347}\hspace{.2cm}\\
+    Department of Statistics and Statistical Laboratory, Iowa State University\\
+    and \\
+    \\
+    Department of Statistics and Statistical Laboratory, Iowa State University}
+  \maketitle
+} \fi
+
+\if1\blind
+{
+  \bigskip
+  \bigskip
+  \bigskip
+  \begin{center}
+    {\LARGE\bf Visual inference on different lineup scenarios}
+\end{center}
+  \medskip
+} \fi
+
+\bigskip
+\begin{abstract}
+Graphics play a crucial role in statistical analysis and data mining. Being able to quantify structure in data that is visible in plots, and how people read the structure from plots is an ongoing challenge. \hh{XXX just a placeholder}
+\end{abstract}
+
+\noindent%
+{\it Keywords:}  Visual inference, Lineup protocol, \hh{XXX Other keywords?}.
+\vfill
+
+\newpage
+\spacingset{1.45} % DON'T change the spacing!
+
+\tableofcontents
+\newpage
+
+<<setup, echo = FALSE, message = FALSE, warning = FALSE>>=
+options(replace.assign=TRUE,width=70, digits=2)
+require(knitr)
+opts_chunk$set(fig.path='figure/', cache.path='cache/', fig.align='center', fig.width=5, fig.height=5, par=TRUE, cache=TRUE, concordance=TRUE, autodep=TRUE, message=F, warning=F)
+
+library(dplyr)
+library(ggplot2)
+@
+
+
+
+\section{Rough thoughts on the model}
+
+
+For a lineup of size $m$ let $X_i$ $i = 1, ..., m$ be the number of times that panel \#$i$ is identified as the most different out of $K$ evaluations (therefore $0 \le X_i \le K, \sum_i X_i = K$). Then the vector 
+ $X = (X_1, ..., X_m)$ is distributed according to a Multinomial distribution with probability vector $p = (p_1, ..., p_m)$, i.e.\ $0 \le p_i \le 1, \sum_i p_i = 1$. $p$ is therefore an element of the $(m-1)$-dimensional simplex $S(m-1)$.
+
+We will assume that under the null distribution $p$ has a symmetric (aslo called \emph{flat}) Dirichlet distribution $Dir(\alpha)$, with $\alpha > 0$, i.e.\ all concentration rates $\alpha_i$ are identical. 
+
+The density of a flat $Dir(\alpha)$ is given as 
+\[
+f(p_1, ..., p_{m-1}; \alpha) = \frac{\Gamma(\alpha m)}{\Gamma(\alpha)^m} \prod_{i=1}^{m}p_i^{\alpha-1}.
+\]
+When $\alpha=1$, the symmetric Dirichlet distribution is the uniform distribution on the $(m-1)$ dimensional simplex. For $\alpha < 1$ the mass of the distribution is along the edges of the simplex, i.e.\ most values $p_i$ will be close to zero. For $\alpha > 1$ most values $p_i$ will be similar, with a mass in the middle of the simplex. 
+For all  Dirichlet distributions hold, that the margins $p_i$ are distributed according to a Beta distribution, which in the case of a symmetric Dirichlet distribution simplify to $p_i \sim \text{Beta}\left(\alpha, (m-1)\alpha\right)$. In the symmetric case, we also know that $E[p_i] = 1/m$, i.e.\ the expected value of the probability to pick panel \#$i$ only depends on the size $m$ of the lineup. 
+
+\hh{XXX what meaning does the rate $\alpha$ have in the lineup setting? I would like to be able to say that $m\alpha$ is the number of 'interesting' looking null plots that we see on average in a lineup of size $m$. }
+
+Figure~\ref{fig:simplex} shows examples of three Dirichlet distributions on $S(2)$ with different rates. 
+
+\begin{figure}
+\begin{subfigure}[t]{\textwidth}
+\caption{Examples of Dirichlet distributions on the 2-dimensional simplex.}
+<<simplex, echo=FALSE, out.width='\\textwidth', fig.width=12, fig.height=4>>=
+simplex <- c(1/7, 1, 7) %>% purrr::map_df(.f=function(alpha) {
+  data.frame(gtools::rdirichlet(1000, alpha=rep(alpha, 3)))
+}, .id="alpha")
+names(simplex)[2:4] <- paste("p",1:3, sep="")
+simplex$alphalabel <- factor(simplex$alpha)
+levels(simplex$alphalabel) <- c("alpha: 1/7", "alpha: 1", "alpha: 7")
+
+library(ggtern)
+ggtern::ggtern(aes(x=p1, y=p2, z=p3), data=simplex) + 
+  geom_point() + facet_wrap(~alphalabel, labeller="label_parsed") +
+  theme_bw() +
+  theme(panel.background=element_rect(colour="black"))
+@
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\caption{Corresponding marginal Beta($\alpha, 2\alpha$) densities.}
+<<betas, echo=FALSE, out.width='\\textwidth', fig.width=12, fig.height=4>>=
+p <- seq(0,1, by=0.005)
+alpha <- c(1/7,1,7)
+betas <- data.frame(expand.grid(p=p, alpha=alpha))
+betas$density <- with(betas, dbeta(p, alpha, 2*alpha))
+betas$density[is.infinite(betas$density)] <- 0
+betas <- rbind(betas, data.frame(p=0,alpha=1,density=0))
+betas$alphalabel <- factor(betas$alpha)
+levels(betas$alphalabel) <- expression("alpha: 1/7", "alpha: 1", "alpha: 7")
+qplot(data=betas, p, y=density, geom="polygon", fill=I("grey50"), alpha=I(.8), colour=I("grey20")) + 
+  ylab("density") + facet_wrap(~alphalabel, labeller="label_parsed") + ggplot2::theme_bw() 
+@
+\end{subfigure}
+\caption{\label{fig:simplex}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$. The lines mark the boundaries of the $S(2)$ simplex. Bottom row: marginal distributions of each of the $X_i$.}
+\end{figure}
+
+
+
+\hh{Does it matter how the lineup protocol is administered in terms of our scenarios 1, 2, 3? XXX Yes it does! and it is beautiful!!!! XXX Under what circumstances does the number of data picks become a Binomial distribution again?
+What is the general distribution of the number of data picks under the null hypothesis? - we can probably derive that distribution from the marginal distribution of the multinomial-Dirichlet model.}
+
+\subsection{Scenario III}
+
+We are interested in the distribution of $X_m$, the number of times  that the data plot is identified in  $K$ independent evaluations.
+We know that
+$X_m \mid p_m \sim \text{Binom}_{K, p_m}$
+
+\[
+P(X_m = x \mid p_m) = {K \choose x} p_m^x (1-p_m)^{K-x}
+\]
+
+\hh{************************}
+
+\begin{eqnarray*}
+P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\ 
+&=& {K \choose x} \int_0^1  p_m^x (1-p_m)^{K-x} f(p_m) dp_m \\
+&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \int_0^1  p_m^x (1-p_m)^{K-x} p_m^{\alpha-1} (1-p_m)^{(m-1)\alpha-1} dp_m \\
+&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)}  \int_0^1  p_m^{x+\alpha-1} (1-p_m)^{K-x + (m-1)\alpha-1} dp_m \\
+&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \cdot B\left(x+\alpha, K-x + (m-1)\alpha \right)  \\
+&=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(K+m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha + K-x)}{\Gamma((m-1)\alpha)} \cdot \frac{\Gamma(\alpha+x)}{\Gamma(\alpha)}  \\
+\end{eqnarray*}
+These probabilities are shown in Figure~\ref{fig:xm}. Depending on the rate $\alpha$ they are quite different from Binomial probabilities.
+But for large values of $\alpha$ the densities converge in distribution to the Binomial with parameters $K$ and probability of success $p = 1/m$, because \hh{Tritz, das ist Deines - ich bin mir sicher, dass es stimmt, aber es ist echt eklig - koenntest Du Dich darum kuemmern?}
+\begin{eqnarray*}
+\lim_{\alpha \to \infty} P(X_m = x) = \lim_{\alpha \to \infty} {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right) }{B\left(\alpha, (m-1)\alpha\right) } =
+ {K \choose x} \left(\frac{1}{m}\right)^x \left(1-\frac{1}{m}\right)^{K-x}
+\end{eqnarray*}
+
+
+\hh{What is the expected value of $X_m$? - that might give us a nice interpretation of $\alpha$.}
+
+\hh{************************}
+
+\begin{figure}
+<<xm, echo=FALSE, fig.width=8, fig.height=3, out.width='\\textwidth'>>=
+Kxs <- c(5,10,15) %>% purrr::map_df(
+  .f=function(K) {
+    data.frame(x=0:K)
+  }, .id="K")
+Kxs$K <- c(5,10,15)[as.numeric(Kxs$K)]
+
+xmDistr <- rbind(
+  data.frame(alpha=1/7, Kxs),
+  data.frame(alpha=1, Kxs),
+  data.frame(alpha=7, Kxs))
+
+xmDistr$prob <- with(xmDistr, choose(K,x)/beta(alpha, 19*alpha)*beta(x+alpha, K-x+19*alpha))
+xmDistr$binom <- with(xmDistr, dbinom(x, size=K, prob=1/20))
+xmDistr$alphalabel <- factor(xmDistr$alpha)
+levels(xmDistr$alphalabel) <- c("1/7", "1", "7")
+ggplot(data=xmDistr, aes(x=x, y=prob)) +  
+  facet_grid(.~K, scales="free_x", space="free_x", 
+             labeller="label_both") + theme_bw() + 
+  geom_segment(aes(x=x-.4, xend=x+.4, y=binom, yend=binom), 
+               colour="grey50") + 
+  geom_point(aes(colour=alphalabel)) + 
+  scale_colour_brewer("alpha", palette="Set2") + 
+  scale_x_continuous(breaks=0:15, minor_breaks=NULL) + 
+  ylab("P(X = x)") +
+  xlab("Number of data detections x") +
+  ggplot2::theme_bw()
+@
+\caption{\label{fig:xm} Probability of the number of data detection under the null hypothesis in $K$ evaluations. The grey line segments correspond to a binomial probability $B(K, 1/20)$.}
+\end{figure}
+
+
+\subsection{Scenario I}
+Let us assume that the lineups in the study are administered such that each lineup is only shown to one participant. This is only practical, if we have a way to `produce' data, i.e. we are in a situation where we can either use sampling or create data from a model.
+Then $X$, the number of times the data was identified from the lineup in $K$ independent evaluations, is given as the sum of Bernoulli variables $X_i$, such that 
+$X = sum_{i=1}^K X_i$ with $X_i \mid p_i \sim \text{Binom}_{1, p_i}$.
+Then the distribution of $X$ is a Binomial distribution with parameters $K$ and $1/m$, because the $X_i$ are independent and identical with $p_i = 1/m$:
+\begin{eqnarray*}
+P(X_i = k) &=&  \frac{1}{B(\alpha, (m-1)\alpha)} B(k + \alpha, 1- k + (m-1)\alpha) \\
+&=& \begin{cases}
+    \frac{B(\alpha, (m-1)\alpha+1)}{B(\alpha, (m-1)\alpha)} & \text{if } k = 0, \\
+    \frac{B(\alpha+1, (m-1)\alpha)}{B(\alpha, (m-1)\alpha)}              & \text{if } k = 1
+    \end{cases},\\
+&=& \begin{cases}
+    1- 1/m & \text{if } k = 0, \\
+    1/m              & \text{if } k = 1
+\end{cases}.
+\end{eqnarray*}
+
+\subsection{Scenario II}
+Scenario II is the situation, where we keep the same data plot in the lineup, but exchange the null plots. How do we model this? \hh{XXX not sure yet}
+
+\section{Estimating the concentration parameter}
+
+<<ex-elect, echo=FALSE>>=
+raw11 <- read.csv("data/raw_data_turk11.csv", stringsAsFactors = FALSE)
+elect <- raw11[grep("electoral", as.character(raw11$param_value)),]
+library(dplyr)
+response <- strsplit(elect$response_no, split=",")
+elect$weight <- response %>% purrr::map(.f = length) %>% unlist()
+bigelect <- elect %>% purrr::map_df(.f = function(x) rep(x, elect$weight)) %>% data.frame()
+bigelect$response_no <- unlist(response)
+bigelect$weight <- 1/bigelect$weight
+
+filler <- data.frame(expand.grid(
+  param_value=unique(bigelect$param_value), 
+  response_no=1:20))
+bigelect <- merge(bigelect, filler, by=c("param_value", "response_no"), all=TRUE)
+bigelect$weight[is.na(bigelect$weight)] <- 0
+bigelect <- bigelect %>% group_by(param_value) %>% 
+  mutate(plot_location=na.omit(plot_location)[1])
+bigelect$correct <- with(bigelect, !(response_no!=plot_location))
+
+
+pars <- bigelect %>% filter(correct!=TRUE) %>% split(.$param_value) %>% 
+  purrr::map(.f = function(x) {
+    dir <- tidyr::spread(x, key=response_no, value=weight, fill=0)
+    sirt::dirichlet.mle(dir[,23:41])
+  })
+
+pval3 <- function(x, K, alpha, m=20) {
+  i <- seq(round(x), K)
+  sum(choose(K, i)/beta(alpha, (m-1)*alpha) * beta(i + alpha, K-i+(m-1)*alpha))
+}
+
+ns <- bigelect %>%  group_by(param_value) %>% summarize(n=sum(weight), detected=sum(correct*weight))
+ns$alpha <- pars %>% purrr::map(function(x) x$alpha0/19) %>% unlist()
+ns$dirprob <- 1:nrow(ns) %>% purrr::map(.f=function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha[i])) %>% unlist()
+@
+
+<<ex-elect-table, dependson='ex-elect', echo=FALSE, results='asis'>>=
+library(xtable)
+xtable(ns, digits=c(0,0,0, 1, 4,4))
+@
+
+
+
+\hh{XXX what is the distribution of the p values for the number of picks of  null plots? It should be close to a uniform distribution. But it looks much closer to a beta distribution.}
+
+\subsection{Empirical distribution of the number of null plot picks}
+
+<<probs-null, echo=FALSE, results='asis'>>=
+nulls <- bigelect %>% filter(!correct) %>% group_by(param_value, response_no) %>% 
+  summarize(
+    pick = sum(weight, na.rm=T)
+  )
+nulls <- nulls %>% group_by(param_value) %>% 
+  mutate(
+    n = sum(pick, na.rm=T)
+  )
+nulls <- merge(nulls, ns[, c("param_value", "alpha")], by="param_value")
+
+# refit the dirichlet based on five means
+nulls$perc <- with(nulls, pick/n)
+null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0)
+one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
+one_par$alpha0/19
+ns$dirprob2 <- 1:nrow(ns) %>% 
+  purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=one_par$alpha0/19)) %>% unlist()
+xtable(ns, digits=c(0,0,0,1,4,4,4))
+#nulls$dirprob <- 1:nrow(nulls) %>% purrr::map(.f=function(i) pval3(nulls$pick[i], K=nulls$n[i], alpha=nulls$alpha[i])) %>% unlist()
+#qplot(dirprob, data=nulls, binwidth=.035)
+@
+
+Minimum of $m-1$ (independent - violated!) uniformly distributed variables $X_i$ is 
+\[
+P( \min_i X_i \le x) = 1 - (1-x)^{m-1}.
+\]
+We are really dealing with Beta distributed variables $X_i$. The resulting probabilities actually look more like a sample from a Beta distribution.
+
+
+\begin{figure}
+\centering
+<<ex-summary, echo=FALSE, fig.width=8, fig.height=3, out.width='.8\\textwidth'>>=
+ps <- pars %>% purrr::map_df(.f = function(x) x$xsi)
+alphas <- tidyr::gather(ps, key=lineup, value=prob)
+
+ps2 <- pars %>% purrr::map_df(.f = function(x) names(x$xsi))
+names <- tidyr::gather(ps2, key=lineup, value=name)
+alphas$response_no <- names$name
+# not sure how the xsi relate to the probabilities ...  
+qplot(param_value, perc, data=nulls) + theme_bw() + ylab("Probabilities p") +xlab("") +
+  geom_label(aes(label=response_no), nudge_x=0.2, data=subset(nulls, perc > 0.15))
+
+@
+\caption{Empirical probabilities $p_i$ for each lineup. All lineups have some null plots that are high in the number of picks.}
+\end{figure}
+
+\bibliographystyle{asa}
+\bibliography{references}
+
+\end{document}
