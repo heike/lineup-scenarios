@@ -107,7 +107,7 @@ library(xtable)
 @
 
 <<function, echo=FALSE>>=
-alpha.ml <- function(p, eps=10^(-5)) {
+alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
   # matrix p
   if (is.null(dim(p))) {
     m <- length(p)
@@ -116,10 +116,13 @@ alpha.ml <- function(p, eps=10^(-5)) {
     n <- dim(p)[1]
     m <- dim(p)[2]
   }
+  if (is.null(weight)) weight <- rep(1, n)
+  else n <- sum(weight)
+  
   ps <- pmax(p, eps) # make sure we don't take the log of 0
   ps <- ps/rowSums(ps)
   
-  logp <- sum(log(ps))/(m*n)
+  logp <- sum(weight*rowSums(log(ps)))/(m*n)
   ml <- function(alpha) {
     digamma(alpha) - digamma(alpha*m) - logp
   }
@@ -442,18 +445,18 @@ For $K=1$ we have an expected value of $E[X^{(1)}] = \frac{m-1}{m}$.
 
 \subsection{Estimation of the concentration parameter}
 
-Let $P_1, ..., P_n$ be the vectors of observed picking probabilities for $n$ lineups, i.e. for  lineup \#$i$ we have a vector $P_i = (p_1, ..., p_{m})$ of probabilities for picking null panel $j = 1, ..., m$ in the lineup.
+Let $P_1, ..., P_n$ be the vectors of observed picking probabilities for $n$ lineups, i.e. for  lineup \#$i$ we have a vector $P_i = (p_1, ..., p_{m_o})$ of probabilities for picking null panel $j = 1, ..., m_o$ in the lineup, where ${m_o}$ is the number of null plots in the lineup of size $m$.
 
 Assuming a symmetric Dirichlet distribution we estimate the concentration parameter $\alpha$ using a maximum likelihood approach as:
 \begin{eqnarray*}
 {\cal L}(\alpha; P_1, ..., P_n) &=& \prod_{j=1}^n
-\frac{\Gamma(\alpha m)}{\Gamma(\alpha)^m} \prod_{j=1}^m p_{ij}^{\alpha-1} \\
-&=& \frac{\Gamma(\alpha m)^n}{\Gamma(\alpha)^{mn}} \prod_{j=1}^n \prod_{i=1}^m p_{ij}^{\alpha-1}
+\frac{\Gamma(\alpha m_o)}{\Gamma(\alpha)^{m_o}} \prod_{j=1}^{m_o} p_{ij}^{\alpha-1} \\
+&=& \frac{\Gamma(\alpha {m_o})^n}{\Gamma(\alpha)^{m_on}} \prod_{j=1}^n \prod_{i=1}^{m_o} p_{ij}^{\alpha-1}
 \end{eqnarray*}
 
 The corresponding log likelihood function is then
 \begin{eqnarray*}
-\log {\cal L}(\alpha; P_1, ..., P_n) &=& n \log \Gamma(\alpha m) - nm \log \Gamma(\alpha) + (\alpha-1) \sum_{i,j} \log p_{ij}
+\log {\cal L}(\alpha; P_1, ..., P_n) &=& n \log \Gamma(\alpha {m_o}) - n{m_o} \log \Gamma(\alpha) + (\alpha-1) \sum_{i,j} \log p_{ij}
 \end{eqnarray*}
 Let $\psi(x)$ denote the \emph{digamma} function. Digamma is defined as the derivative of the log Gamma function, i.e.
 \[
@@ -461,7 +464,7 @@ Let $\psi(x)$ denote the \emph{digamma} function. Digamma is defined as the deri
 \]
 With this definition the maximum likelihood estimate $\hat{\alpha}$ of the concentration parameter $\alpha$ is the solution to 
 \[
-\psi(\alpha) - \psi(m\alpha) = \frac{1}{mn} \sum_{i,j} \log p_{ij}
+\psi(\alpha) - \psi({m_o}\alpha) = \frac{1}{{m_o}n} \sum_{i,j} \log p_{ij}
 \]
 
 \begin{figure}
