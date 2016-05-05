@@ -119,7 +119,8 @@ alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
   if (is.null(weight)) weight <- rep(1, n)
   else n <- sum(weight)
   
-  ps <- pmax(p, eps) # make sure we don't take the log of 0
+  ps <- p
+  ps[p < eps] <- eps # make sure we don't take the log of 0
   ps <- ps/rowSums(ps)
   
   logp <- sum(weight*rowSums(log(ps)))/(m*n)
@@ -321,6 +322,7 @@ pars <- bigelect %>% filter(correct!=TRUE) %>% split(.$param_value) %>%
     sirt::dirichlet.mle(dir[,23:41])
   })
 
+
 pval3 <- function(x, K, alpha, m=20) {
   i <- seq(round(x), K)
   sum(choose(K, i)/beta(alpha, (m-1)*alpha) * beta(i + alpha, K-i+(m-1)*alpha))
@@ -357,6 +359,7 @@ nulls$perc <- with(nulls, pick/n)
 null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0)
 one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
 one_par$alpha0/19
+ours <- alpha.ml(null_means[,2:21], weight=ns$n-ns$detected)
 ns$dirprob2 <- 1:nrow(ns) %>%
   purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=one_par$alpha0/19)) %>% unlist()
 xtable(ns, digits=c(0,0,0,1,4,4,4))
