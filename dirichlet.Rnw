@@ -207,6 +207,9 @@ In the situation that the concentration parameter goes to infinity, the limiting
 
 \hh{What is the expected value of $X_m$? - that might give us a nice interpretation of $\alpha$.}
 
+
+
+
 \hh{************************}
 
 \begin{figure}
@@ -358,6 +361,61 @@ qplot(param_value, perc, data=nulls) + theme_bw() + ylab("Probabilities p") +xla
 @
 \caption{Empirical probabilities $p_i$ for each lineup. All lineups have some null plots that are high in the number of picks.}
 \end{figure}
+
+
+\section{Derivations}
+
+\subsection{Distribution of data detections in Scenario III under the null hypothesis}
+The probability of the number of data detections $x$ under the null hypothesis is given as:
+\[
+P(X = x) = {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \cdot B\left(x+\alpha, K-x + (m-1)\alpha \right)
+\]
+To show that the above probabilities form a mass function for  $x = 0, ... K$ it helps to verify the following property of the Beta function for all positive real values $\alpha, \beta$:
+\begin{eqnarray*}
+\frac{B(\alpha + 1, \beta)}{B(\alpha, \beta)} = \frac{\alpha}{\alpha+\beta} \ \ \ \ \text { and } \ \ \ \ 
+\frac{B(\alpha, \beta + 1)}{B(\alpha, \beta)} = \frac{\beta}{\alpha+\beta}. 
+\end{eqnarray*}
+
+Let $X^{(K)}$ be the random variable describing the number of data detections in $K$ evaluations of a lineup of size $m$, then 
+for $K = 1$ the probabilities form a mass function:
+\begin{eqnarray*}
+P(X^{(1)} = 0) &=&  \frac{B\left(\alpha, 1 + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} = \frac{(m-1)\alpha}{m\alpha}  = 1 - \frac{1}{m} \\
+P(X^{(1)} = 1) &=& \frac{B\left(1+\alpha, (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} = \frac{\alpha}{m\alpha} = \frac{1}{m}.
+\end{eqnarray*}
+We can prove that the probabilities form a probability mass function for general $K$. 
+\begin{eqnarray*}
+\sum_{x = 0}^K P(X^{(K)} = x) &=& \sum_{x = 0}^K {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}  \\
+&=& \frac{B\left(\alpha, K + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} + 
+\frac{B\left(K+\alpha, (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}  + \\
+&& \sum_{x = 1}^{K-1} {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}  \\
+&=&  \frac{B\left(\alpha, K + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} + \sum_{x = 1}^{K-1} {{K-1} \choose {x-1}} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} + \\
+&& \frac{B\left(K+\alpha, (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}  + \sum_{x = 1}^{K-1} {{K-1} \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} \\
+&=& \sum_{x = 1}^{K} {{K-1} \choose {x-1}} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} + \\
+&& \sum_{x = 0}^{K-1} {{K-1} \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} \\
+&=& \sum_{x = 0}^{K-1} {{K-1} \choose {x}} \frac{B\left(x+1+\alpha, K-1-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} + \\
+&& \sum_{x = 0}^{K-1} {{K-1} \choose x} \frac{B\left(x+\alpha, K-1-x + (m-1)\alpha +1\right)}{B\left(\alpha, (m-1)\alpha\right)} \\
+&=& \sum_{x = 0}^{K-1} P(X^{(K-1)} = x) \cdot \frac{B\left(x+1+\alpha, K-1-x + (m-1)\alpha \right)}{B\left(x+\alpha, K-1-x + (m-1)\alpha \right)} + \\
+&& \sum_{x = 0}^{K-1} P(X^{(K-1)} = x) \cdot  \frac{B\left(x+\alpha, K-1-x + (m-1)\alpha +1\right)}{B\left(x+\alpha, K-1-x + (m-1)\alpha \right)} \\
+&=& \sum_{x = 0}^{K-1} P(X^{(K-1)} = x) \cdot \frac{x+\alpha}{K-1+m\alpha} + \\
+&& \sum_{x = 0}^{K-1} P(X^{(K-1)} = x) \cdot  \frac{K-1-x+(m-1)\alpha}{K-1+m\alpha} =  \sum_{x = 0}^{K-1} P(X^{(K-1)} = x) \\
+\end{eqnarray*}
+By induction over $K$ therefore follows that $P(X^{(K)} = x)$ is a probability mass function for $x = 0, ..., K$ for all positive integers $K$.
+% \begin{eqnarray*}
+% P(X^{(1)} = 0) &=& \frac{B\left(\alpha, 1 + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} \\
+% &=& \frac{\Gamma(\alpha) \Gamma(1 + (m-1)\alpha) \Gamma(m\alpha)}{ \Gamma(\alpha + 1 + (m-1)\alpha ) \Gamma(\alpha) \Gamma((m-1)\alpha)}
+% \begin{eqnarray*}
+
+\subsection{Expected value of the number of data detection in scenario III under the null hypothesis}
+For the expected number of  data detections in $K$ evaluations of scenario III under the null hypothesis we get the following recursive expression:
+\begin{eqnarray*}
+E[X^{(K)}] &=& \sum_{x = 0}^K x P(X{(K)} = x) = \sum_{x = 1}^K x P(X{(K)} = x) \\
+&=&  \sum_{x = 1}^K x {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}  \\
+&=& K \sum_{x = 1}^K {{K -1} \choose {x-1}} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} \\
+&=& K \cdot \sum_{x = 0}^{K-1} {{K-1} \choose {x}} \frac{B\left(x+\alpha+1, K-1-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} \\
+&=& K \cdot \sum_{x = 0}^{K-1}  P(X^{(k-1)} = x) \frac{x+\alpha}{K-1+m\alpha} \\
+&=& \frac{K}{K-1+m\alpha} \left(E[X^{(K-1)}] + \alpha\right). \\
+\end{eqnarray*}
+For $K=1$ we have an expected value of $E[X^{(1)}] = \frac{m-1}{m}$.
 
 \bibliographystyle{asa}
 \bibliography{references}
