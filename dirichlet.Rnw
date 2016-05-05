@@ -132,7 +132,6 @@ alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
   
   alpha$root
 }
-
 @
 
 \section{Rough thoughts on the model}
@@ -186,7 +185,7 @@ qplot(data=betas, p, y=density, geom="polygon", fill=I("grey50"), alpha=I(.8), c
   ylab("density") + facet_wrap(~alphalabel, labeller="label_parsed") + ggplot2::theme_bw()
 @
 \end{subfigure}
-\caption{\label{fig:simplex}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$. The lines mark the boundaries of the $S(2)$ simplex. Bottom row: marginal distributions of each of the $X_i$.}
+\caption{\label{fig:simplex}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$. Because the points lie on The lines mark the boundaries of the $S(2)$ simplex. Bottom row: marginal distributions of each of the $X_i$.}
 \end{figure}
 
 
@@ -277,7 +276,7 @@ ggplot(data=xmDistr, aes(x=x, y=prob)) +
 \subsection{Scenario I}
 Let us assume that the lineups in the study are administered such that each lineup is only shown to one participant. This is only practical, if we have a way to `produce' data, i.e. we are in a situation where we can either use sampling or create data from a model.
 Then $X$, the number of times the data was identified from the lineup in $K$ independent evaluations, is given as the sum of Bernoulli variables $X_i$, such that
-$X = sum_{i=1}^K X_i$ with $X_i \mid p_i \sim \text{Binom}_{1, p_i}$.
+$X = \sum_{i=1}^K X_i$ with $X_i \mid p_i \sim \text{Binom}_{1, p_i}$.
 Then the distribution of $X$ is a Binomial distribution with parameters $K$ and $1/m$, because the $X_i$ are independent and identical with $p_i = 1/m$:
 \begin{eqnarray*}
 P(X_i = k) &=&  \frac{1}{B(\alpha, (m-1)\alpha)} B(k + \alpha, 1- k + (m-1)\alpha) \\
@@ -292,7 +291,7 @@ P(X_i = k) &=&  \frac{1}{B(\alpha, (m-1)\alpha)} B(k + \alpha, 1- k + (m-1)\alph
 \end{eqnarray*}
 
 \subsection{Scenario II}
-Scenario II is the situation, where we keep the same data plot in the lineup, but exchange the null plots. How do we model this? \hh{XXX not sure yet}
+Scenario II is the situation, where we keep the same data plot in the lineup, but exchange the null plots. The main idea in analysing this scenario is to use the different sets of nulls for estimating one overall concentration parameter for $\alpha$ using an ML approach with weights according to the number of evaluations available for each lineup. We can then compute one overall $p$-value based on the number of data detection across all lineups. \hh{XXX there is a bit of a problem with dependence. The data detections come from a mix of different lineups, so there is a bit of a dependence/independence issue going on, that I'd still like to look into. XXX The overall p-value should not be very different from the individual $p$-values we get by assuming each of the lineups was done under scenario III. }
 
 \section{Estimating the concentration parameter}
 
@@ -356,18 +355,25 @@ nulls <- merge(nulls, ns[, c("param_value", "alpha")], by="param_value")
 
 # refit the dirichlet based on five means
 nulls$perc <- with(nulls, pick/n)
-null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0)
+null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0) # filling with 0 isn't quite right
 one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
 one_par$alpha0/19
-ours <- alpha.ml(null_means[,2:21], weight=ns$n-ns$detected)
+ns$alpha.ours <- 1:5 %>% purrr::map(function(i) alpha.ml(null_means[i,2:21])) %>% unlist
+ns$alpha.one.ours <- alpha.ml(null_means[,2:21], weight=ns$n-ns$detected)
+
 ns$dirprob2 <- 1:nrow(ns) %>%
   purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=one_par$alpha0/19)) %>% unlist()
-xtable(ns, digits=c(0,0,0,1,4,4,4))
+ns$pval <- 1:nrow(ns) %>%
+  purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.ours[i])) %>% unlist()
+ns$pval2 <- 1:nrow(ns) %>%
+  purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.one.ours[i])) %>% unlist()
+ns <- ns %>% select(-c(alpha, dirprob, dirprob2))
+xtable(ns, digits=c(0,0,0,1,4,4,4,4))
+pval3(sum(ns$detected), K=sum(ns$n), alpha=ns$alpha.one.ours[1])
 #nulls$dirprob <- 1:nrow(nulls) %>% purrr::map(.f=function(i) pval3(nulls$pick[i], K=nulls$n[i], alpha=nulls$alpha[i])) %>% unlist()
 #qplot(dirprob, data=nulls, binwidth=.035)
 @
 
-Minimum of $m-1$ (independent - violated!) uniformly distributed variables $X_i$ is
 \[
 P( \min_i X_i \le x) = 1 - (1-x)^{m-1}.
 \]
