@@ -106,7 +106,29 @@ library(ggtern)
 library(xtable)
 @
 
+<<function, echo=FALSE>>=
+alpha.ml <- function(p, eps=10^(-5)) {
+  # matrix p
+  if (is.null(dim(p))) {
+    m <- length(p)
+    n <- 1
+  } else {
+    n <- dim(p)[1]
+    m <- dim(p)[2]
+  }
+  ps <- pmax(p, eps) # make sure we don't take the log of 0
 
+  logp <- sum(log(ps))/(m*n)
+  ml <- function(alpha) {
+    digamma(alpha) - digamma(alpha*m) - logp
+  }
+  # find alpha such that digamma(alpha) - digamma(alpha*m) = logp
+  alpha <- uniroot(f=ml, interval=c(eps,10))
+  
+  alpha$root
+}
+
+@
 
 \section{Rough thoughts on the model}
 
@@ -416,6 +438,68 @@ E[X^{(K)}] &=& \sum_{x = 0}^K x P(X{(K)} = x) = \sum_{x = 1}^K x P(X{(K)} = x) \
 &=& \frac{K}{K-1+m\alpha} \left(E[X^{(K-1)}] + \alpha\right). \\
 \end{eqnarray*}
 For $K=1$ we have an expected value of $E[X^{(1)}] = \frac{m-1}{m}$.
+
+\subsection{Estimation of the concentration parameter}
+
+Let $P_1, ..., P_n$ be the vectors of observed picking probabilities for $n$ lineups, i.e. for  lineup \#$i$ we have a vector $P_i = (p_1, ..., p_{m})$ of probabilities for picking null panel $j = 1, ..., m$ in the lineup.
+
+Assuming a symmetric Dirichlet distribution we estimate the concentration parameter $\alpha$ using a maximum likelihood approach as:
+\begin{eqnarray*}
+{\cal L}(\alpha; P_1, ..., P_n) &=& \prod_{j=1}^n
+\frac{\Gamma(\alpha m)}{\Gamma(\alpha)^m} \prod_{j=1}^m p_{ij}^{\alpha-1} \\
+&=& \frac{\Gamma(\alpha m)^n}{\Gamma(\alpha)^{mn}} \prod_{j=1}^n \prod_{i=1}^m p_{ij}^{\alpha-1}
+\end{eqnarray*}
+
+The corresponding log likelihood function is then
+\begin{eqnarray*}
+\log {\cal L}(\alpha; P_1, ..., P_n) &=& n \log \Gamma(\alpha m) - nm \log \Gamma(\alpha) + (\alpha-1) \sum_{i,j} \log p_{ij}
+\end{eqnarray*}
+Let $\psi(x)$ denote the \emph{digamma} function. Digamma is defined as the derivative of the log Gamma function, i.e.
+\[
+\psi(x) = \frac{\partial}{\partial x} \log{\Gamma(x)} = \frac{\Gamma'(x)}{\Gamma(x)}
+\]
+With this definition the maximum likelihood estimate $\hat{\alpha}$ of the concentration parameter $\alpha$ is the solution to 
+\[
+\psi(\alpha) - \psi(m\alpha) = \frac{1}{mn} \sum_{i,j} \log p_{ij}
+\]
+
+\begin{figure}
+<<echo=FALSE, fig.width=6, fig.height=6, out.width='.5\\textwidth'>>=
+set.seed(20140501)
+alpha <- 0.3
+res <- 1:1000 %>% purrr::map_df(function(i) {
+  ps <- gtools::rdirichlet(5, alpha=rep(alpha, 20))
+  data.frame(ours=alpha.ml(p=ps), sirt=sirt::dirichlet.mle(ps)$alpha0/20)
+}) 
+qplot(ours, sirt, data=res, alpha=I(.2)) + 
+  geom_vline(aes(xintercept=alpha), colour="orange", size=1) + 
+  geom_hline(aes(yintercept=alpha), colour="orange", size=1) +
+  theme_bw()
+
+summary(res)
+@
+\caption{Comparison of sirt's estimation of $\alpha$ compared to the one described above (aka as `ours'). The true parameter value is denoted by the orange lines. It is a bit surprising, that the sirt implementation of dirichlet.mle overestimates the concentration paramater so much. }
+\end{figure}
+
+Another advantage of our implementation is the fact that we can base our estimate on a single instance (such as we would have for just one lineup). This is shown in the density plot
+
+\begin{figure}
+<<density-1p, echo=FALSE, fig.width=6, fig.height=4, out.width='.5\\textwidth'>>=
+set.seed(20140501)
+alpha <- 0.3
+res <- 1:1000 %>% purrr::map(function(i) {
+  ps <- gtools::rdirichlet(1, alpha=rep(alpha, 20))
+  alpha.ml(p=ps)
+}) %>% unlist
+qplot(res, geom="density", fill=I("grey50")) + 
+  geom_vline(aes(xintercept=alpha), colour="orange", size=1) + 
+  theme_bw()
+
+summary(res)
+@
+\caption{Density plots of estimates of the concentration parameter $\alpha$ based on 1,000 single instances of $P$. }
+\end{figure}
+
 
 \bibliographystyle{asa}
 \bibliography{references}
