@@ -118,14 +118,14 @@ alpha.ml <- function(p, eps=10^(-5)) {
   }
   ps <- pmax(p, eps) # make sure we don't take the log of 0
   ps <- ps/rowSums(ps)
-  
+
   logp <- sum(log(ps))/(m*n)
   ml <- function(alpha) {
     digamma(alpha) - digamma(alpha*m) - logp
   }
   # find alpha such that digamma(alpha) - digamma(alpha*m) = logp
   alpha <- uniroot(f=ml, interval=c(eps,10))
-  
+
   alpha$root
 }
 
@@ -216,14 +216,14 @@ But for large values of $\alpha$ the densities converge in distribution to the B
 P(X_m = x) &=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(m\alpha) \prod_{i=0}^{K-1} (i + m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha) \prod_{i=0}^{K-x-1} ((m-1)\alpha + i)}{\Gamma((m-1)\alpha)} \cdot \\
 && \frac{\Gamma(\alpha) \prod_{i=0}^{x-1} (\alpha + i)}{\Gamma(\alpha)} \\
 &=& {K \choose x} \frac{\prod_{i=0}^{K-x-1} ((m-1)\alpha + i) \prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{K-1} (i + m\alpha)} \\
-&=& {K \choose x} \frac{\prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{x-1} (i + m\alpha)} \cdot 
+&=& {K \choose x} \frac{\prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{x-1} (i + m\alpha)} \cdot
 \frac{\prod_{i=0}^{K-x-1} ((m-1)\alpha + i) }{\prod_{i=x}^{K-1} (i + m\alpha)} \\
-&=&  {K \choose x} \prod_{i=0}^{x-1} \frac{\alpha + i}{m\alpha + i} \cdot 
+&=&  {K \choose x} \prod_{i=0}^{x-1} \frac{\alpha + i}{m\alpha + i} \cdot
 \prod_{i=0}^{K-x-1} \frac{(m-1)\alpha + i}{ m\alpha + i+x }
 \end{eqnarray*}
 In the situation that the concentration parameter goes to infinity, the limiting distribution is therefore Binomial:
 \begin{eqnarray*}
-\lim_{\alpha \to \infty} P(X_m = x) &=& \lim_{\alpha \to \infty} {K \choose x} \prod_{i=0}^{x-1} \underbrace{\frac{\alpha + i}{m\alpha + i}}_{\to \frac{1}{m} \text{ for } \alpha \to \infty } \cdot 
+\lim_{\alpha \to \infty} P(X_m = x) &=& \lim_{\alpha \to \infty} {K \choose x} \prod_{i=0}^{x-1} \underbrace{\frac{\alpha + i}{m\alpha + i}}_{\to \frac{1}{m} \text{ for } \alpha \to \infty } \cdot
 \prod_{i=0}^{K-x-1} \underbrace{\frac{(m-1)\alpha + i}{ m\alpha + i+x }}_{\to \frac{m-1}{m} \text{ for } \alpha \to \infty } \\
 &=& {K \choose x} \left(\frac{1}{m}\right)^x \left(1 - \frac{1}{m}\right)^{K-x}
 \end{eqnarray*}
@@ -395,20 +395,20 @@ P(X = x) = {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \cdot B\lef
 \]
 To show that the above probabilities form a mass function for  $x = 0, ... K$ it helps to verify the following property of the Beta function for all positive real values $\alpha, \beta$:
 \begin{eqnarray*}
-\frac{B(\alpha + 1, \beta)}{B(\alpha, \beta)} = \frac{\alpha}{\alpha+\beta} \ \ \ \ \text { and } \ \ \ \ 
-\frac{B(\alpha, \beta + 1)}{B(\alpha, \beta)} = \frac{\beta}{\alpha+\beta}. 
+\frac{B(\alpha + 1, \beta)}{B(\alpha, \beta)} = \frac{\alpha}{\alpha+\beta} \ \ \ \ \text { and } \ \ \ \
+\frac{B(\alpha, \beta + 1)}{B(\alpha, \beta)} = \frac{\beta}{\alpha+\beta}.
 \end{eqnarray*}
 
-Let $X^{(K)}$ be the random variable describing the number of data detections in $K$ evaluations of a lineup of size $m$, then 
+Let $X^{(K)}$ be the random variable describing the number of data detections in $K$ evaluations of a lineup of size $m$, then
 for $K = 1$ the probabilities form a mass function:
 \begin{eqnarray*}
 P(X^{(1)} = 0) &=&  \frac{B\left(\alpha, 1 + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} = \frac{(m-1)\alpha}{m\alpha}  = 1 - \frac{1}{m} \\
 P(X^{(1)} = 1) &=& \frac{B\left(1+\alpha, (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} = \frac{\alpha}{m\alpha} = \frac{1}{m}.
 \end{eqnarray*}
-We can prove that the probabilities form a probability mass function for general $K$. 
+We can prove that the probabilities form a probability mass function for general $K$.
 \begin{eqnarray*}
 \sum_{x = 0}^K P(X^{(K)} = x) &=& \sum_{x = 0}^K {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}  \\
-&=& \frac{B\left(\alpha, K + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} + 
+&=& \frac{B\left(\alpha, K + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} +
 \frac{B\left(K+\alpha, (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}  + \\
 && \sum_{x = 1}^{K-1} {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}  \\
 &=&  \frac{B\left(\alpha, K + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} + \sum_{x = 1}^{K-1} {{K-1} \choose {x-1}} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} + \\
@@ -459,7 +459,7 @@ Let $\psi(x)$ denote the \emph{digamma} function. Digamma is defined as the deri
 \[
 \psi(x) = \frac{\partial}{\partial x} \log{\Gamma(x)} = \frac{\Gamma'(x)}{\Gamma(x)}
 \]
-With this definition the maximum likelihood estimate $\hat{\alpha}$ of the concentration parameter $\alpha$ is the solution to 
+With this definition the maximum likelihood estimate $\hat{\alpha}$ of the concentration parameter $\alpha$ is the solution to
 \[
 \psi(\alpha) - \psi(m\alpha) = \frac{1}{mn} \sum_{i,j} \log p_{ij}
 \]
@@ -471,9 +471,9 @@ alpha <- 0.3
 res <- 1:1000 %>% purrr::map_df(function(i) {
   ps <- gtools::rdirichlet(5, alpha=rep(alpha, 20))
   data.frame(ours=alpha.ml(p=ps), sirt=sirt::dirichlet.mle(ps)$alpha0/20)
-}) 
-qplot(ours, sirt, data=res, alpha=I(.2)) + 
-  geom_vline(aes(xintercept=alpha), colour="orange", size=1) + 
+})
+qplot(ours, sirt, data=res, alpha=I(.2)) +
+  geom_vline(aes(xintercept=alpha), colour="orange", size=1) +
   geom_hline(aes(yintercept=alpha), colour="orange", size=1) +
   theme_bw()
 
@@ -492,8 +492,8 @@ res <- 1:1000 %>% purrr::map(function(i) {
   ps <- gtools::rdirichlet(1, alpha=rep(alpha, 20))
   alpha.ml(p=ps)
 }) %>% unlist
-qplot(res, geom="density", fill=I("grey50")) + 
-  geom_vline(aes(xintercept=alpha), colour="orange", size=1) + 
+qplot(res, geom="density", fill=I("grey50")) +
+  geom_vline(aes(xintercept=alpha), colour="orange", size=1) +
   theme_bw()
 
 summary(res)
