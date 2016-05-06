@@ -32,6 +32,10 @@
 % Define new environment
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{algorithm}[theorem]{Algorithm}
+
+\newtheorem{dfkT}[theorem]{Definition}
+\newenvironment{dfn} {\begin{dfkT} \rm\hfill\\}{\end{dfkT}}
+
 %---------------------------------------------------
 
 %\pdfminorversion=4
@@ -107,7 +111,7 @@ library(xtable)
 @
 
 <<function, echo=FALSE>>=
-alpha.ml <- function(p, eps=10^(-5)) {
+alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
   # matrix p
   if (is.null(dim(p))) {
     m <- length(p)
@@ -116,10 +120,13 @@ alpha.ml <- function(p, eps=10^(-5)) {
     n <- dim(p)[1]
     m <- dim(p)[2]
   }
-  ps <- pmax(p, eps) # make sure we don't take the log of 0
+  if (is.null(weight)) weight <- rep(1, n)
+  else n <- sum(weight)
+  
+  ps <- p
+  ps[p < eps] <- eps # make sure we don't take the log of 0
   ps <- ps/rowSums(ps)
-
-  logp <- sum(log(ps))/(m*n)
+  logp <- sum(weight*rowSums(log(ps)))/(m*n)
   ml <- function(alpha) {
     digamma(alpha) - digamma(alpha*m) - logp
   }
@@ -128,8 +135,35 @@ alpha.ml <- function(p, eps=10^(-5)) {
 
   alpha$root
 }
-
 @
+
+\section{Introduction}
+
+When drawing inference in the setting of a visual triangle test, we have to further consider the exact procedure with which we collect information from  observers. In this paper, we want to distinguish between  three main scenarios:
+
+\begin{itemize}
+\item Scenario I\\
+$K$ different lineups are shown to $K$ independent individuals. 
+%$X$ defined as the number of times an individual picked the data plot, follows under the null hypothesis that the observed data is consistent with the null data a Binomial distribution, with $X \sim B_{K, p=1/3}$. 
+\item Scenario II\\
+Lineups consisting of the same data, but different null plots are shown to $K$ independent individuals. 
+\item Scenario III\\
+The same lineup (same data, same nulls) is shown to $K$ independent individuals.
+\end{itemize}
+For scenario I, we need a model for generating a set of new `data' for each lineup; this scenario is therefore only practical in a simulation or sampling setting. 
+
+The distribution of the number of picks of the data plot depends on the specific scenario used in an experiment. To that effect we define a general {\it visual inference} distribution:
+\begin{dfn}
+Let $X$ be the number of picks of the data plot from a lineup of size $m$ evaluated by $K$ observers. The distribution of $X$ is denoted as the {\it visual inference distribution}
+\[
+X \sim V_{K, m, \alpha, s}
+\]
+where $\alpha$ is a concentration parameter with $\alpha > 0$, and
+$s$ is the scenario ($s = I, II,$ or $III$) as defined above.
+\end{dfn}
+We will see in section~\ref{binomial} that under scenario I the visual inference distribution is the same as the Binomial distribution, ie~$V_{K, m, 1} \equiv B_{K, 1/m}$ for any concentration parameter $\alpha>0$.
+For scenarios II and III the number of picks of the data plot does not follow a binomial distribution, as can also be seen from the simulation results shown in table~\ref{tab:nobinom}, consisting of a side-by-side comparison of the probability to observe exactly $x$ data detections (out of 10 evaluations) under each of the three different scenarios. %For the purpose of this paper we will only consider $V$ distributions for lineups of size $m=20$. 
+
 
 \section{Rough thoughts on the model}
 
@@ -182,7 +216,7 @@ qplot(data=betas, p, y=density, geom="polygon", fill=I("grey50"), alpha=I(.8), c
   ylab("density") + facet_wrap(~alphalabel, labeller="label_parsed") + ggplot2::theme_bw()
 @
 \end{subfigure}
-\caption{\label{fig:simplex}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$. The lines mark the boundaries of the $S(2)$ simplex. Bottom row: marginal distributions of each of the $X_i$.}
+\caption{\label{fig:simplex}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$. Because the points lie on The lines mark the boundaries of the $S(2)$ simplex. Bottom row: marginal distributions of each of the $X_i$.}
 \end{figure}
 
 
@@ -202,18 +236,18 @@ P(X_m = x \mid p_m) = {K \choose x} p_m^x (1-p_m)^{K-x}
 
 \hh{************************}
 
-\begin{eqnarray*}
-P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\
-&=& {K \choose x} \int_0^1  p_m^x (1-p_m)^{K-x} f(p_m) dp_m \\
-&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \int_0^1  p_m^x (1-p_m)^{K-x} p_m^{\alpha-1} (1-p_m)^{(m-1)\alpha-1} dp_m \\
+\begin{eqnarray}\nonumber
+P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\ \nonumber
+&=& {K \choose x} \int_0^1  p_m^x (1-p_m)^{K-x} f(p_m) dp_m \\ \nonumber
+&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \int_0^1  p_m^x (1-p_m)^{K-x} p_m^{\alpha-1} (1-p_m)^{(m-1)\alpha-1} dp_m \\ \nonumber
 &=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)}  \int_0^1  p_m^{x+\alpha-1} (1-p_m)^{K-x + (m-1)\alpha-1} dp_m \\
-&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \cdot B\left(x+\alpha, K-x + (m-1)\alpha \right)  \\
-&=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(K+m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha + K-x)}{\Gamma((m-1)\alpha)} \cdot \frac{\Gamma(\alpha+x)}{\Gamma(\alpha)}  \\
-\end{eqnarray*}
+&=& {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} \label{eq:vs3}
+\end{eqnarray}
 These probabilities are shown in Figure~\ref{fig:xm}. Depending on the rate $\alpha$ they are quite different from Binomial probabilities.
 But for large values of $\alpha$ the densities converge in distribution to the Binomial with parameters $K$ and probability of success $p = 1/m$, because we can write $\Gamma(x + \alpha) = \prod_{i=0}^{x-1}(x + \alpha) \Gamma(\alpha)$ for any non-negative integer $x \ge 0$. Therefore the probability for  $x$ data detections becomes
 \begin{eqnarray*}
-P(X_m = x) &=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(m\alpha) \prod_{i=0}^{K-1} (i + m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha) \prod_{i=0}^{K-x-1} ((m-1)\alpha + i)}{\Gamma((m-1)\alpha)} \cdot \\
+P(X_m = x) &=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(K+m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha + K-x)}{\Gamma((m-1)\alpha)} \cdot \frac{\Gamma(\alpha+x)}{\Gamma(\alpha)}  \\
+&=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(m\alpha) \prod_{i=0}^{K-1} (i + m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha) \prod_{i=0}^{K-x-1} ((m-1)\alpha + i)}{\Gamma((m-1)\alpha)} \cdot \\
 && \frac{\Gamma(\alpha) \prod_{i=0}^{x-1} (\alpha + i)}{\Gamma(\alpha)} \\
 &=& {K \choose x} \frac{\prod_{i=0}^{K-x-1} ((m-1)\alpha + i) \prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{K-1} (i + m\alpha)} \\
 &=& {K \choose x} \frac{\prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{x-1} (i + m\alpha)} \cdot
@@ -273,7 +307,7 @@ ggplot(data=xmDistr, aes(x=x, y=prob)) +
 \subsection{Scenario I}
 Let us assume that the lineups in the study are administered such that each lineup is only shown to one participant. This is only practical, if we have a way to `produce' data, i.e. we are in a situation where we can either use sampling or create data from a model.
 Then $X$, the number of times the data was identified from the lineup in $K$ independent evaluations, is given as the sum of Bernoulli variables $X_i$, such that
-$X = sum_{i=1}^K X_i$ with $X_i \mid p_i \sim \text{Binom}_{1, p_i}$.
+$X = \sum_{i=1}^K X_i$ with $X_i \mid p_i \sim \text{Binom}_{1, p_i}$.
 Then the distribution of $X$ is a Binomial distribution with parameters $K$ and $1/m$, because the $X_i$ are independent and identical with $p_i = 1/m$:
 \begin{eqnarray*}
 P(X_i = k) &=&  \frac{1}{B(\alpha, (m-1)\alpha)} B(k + \alpha, 1- k + (m-1)\alpha) \\
@@ -288,14 +322,14 @@ P(X_i = k) &=&  \frac{1}{B(\alpha, (m-1)\alpha)} B(k + \alpha, 1- k + (m-1)\alph
 \end{eqnarray*}
 
 \subsection{Scenario II}
-Scenario II is the situation, where we keep the same data plot in the lineup, but exchange the null plots. How do we model this? \hh{XXX not sure yet}
+Scenario II is the situation, where we keep the same data plot in the lineup, but exchange the null plots. The main idea in analysing this scenario is to use the different sets of nulls for estimating one overall concentration parameter for $\alpha$ using an ML approach with weights according to the number of evaluations available for each lineup. We can then compute one overall $p$-value based on the number of data detection across all lineups. \hh{XXX there is a bit of a problem with dependence. The data detections come from a mix of different lineups, so there is a bit of a dependence/independence issue going on, that I'd still like to look into. XXX The overall p-value should not be very different from the individual $p$-values we get by assuming each of the lineups was done under scenario III. }
 
 \section{Estimating the concentration parameter}
 
 <<ex-elect, echo=FALSE>>=
 # needs to be put into data folder - but please don't put this data onto the repo
 raw11 <- read.csv("data/corrected_data_turk11.csv", stringsAsFactors = FALSE)
-elect <- raw11[grep("electoral", as.character(raw11$param_value)),]
+elect <- raw11[grep("autismfanned2", as.character(raw11$param_value)),]
 response <- strsplit(elect$response_no, split=",")
 elect$weight <- response %>% purrr::map(.f = length) %>% unlist()
 bigelect <- elect %>% purrr::map(.f = function(x) rep(x, elect$weight)) %>% data.frame()
@@ -312,11 +346,14 @@ bigelect <- bigelect %>% group_by(param_value) %>%
 bigelect$correct <- with(bigelect, !(response_no!=plot_location))
 
 
-pars <- bigelect %>% filter(correct!=TRUE) %>% split(.$param_value) %>%
+pars <- bigelect %>% filter(correct!=TRUE) %>% select(param_value, response_no, weight) %>% 
+  split(.$param_value) %>%
   purrr::map(.f = function(x) {
+    x$id <- 1:nrow(x)
     dir <- tidyr::spread(x, key=response_no, value=weight, fill=0)
-    sirt::dirichlet.mle(dir[,23:41])
+    sirt::dirichlet.mle(dir[,-(1:2)])
   })
+
 
 pval3 <- function(x, K, alpha, m=20) {
   i <- seq(round(x), K)
@@ -351,17 +388,25 @@ nulls <- merge(nulls, ns[, c("param_value", "alpha")], by="param_value")
 
 # refit the dirichlet based on five means
 nulls$perc <- with(nulls, pick/n)
-null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0)
+null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0) # filling with 0 isn't quite right
 one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
 one_par$alpha0/19
+ns$alpha.ours <- 1:nrow(null_means) %>% purrr::map(function(i) alpha.ml(null_means[i,2:21])) %>% unlist
+ns$alpha.one.ours <- alpha.ml(null_means[,2:21], weight=ns$n-ns$detected)
+
 ns$dirprob2 <- 1:nrow(ns) %>%
   purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=one_par$alpha0/19)) %>% unlist()
-xtable(ns, digits=c(0,0,0,1,4,4,4))
+ns$pval <- 1:nrow(ns) %>%
+  purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.ours[i])) %>% unlist()
+ns$pval2 <- 1:nrow(ns) %>%
+  purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.one.ours[i])) %>% unlist()
+ns <- ns %>% select(-c(alpha, dirprob, dirprob2))
+xtable(ns, digits=c(0,0,0,1,4,4,4,4))
+pval3(sum(ns$detected), K=sum(ns$n), alpha=ns$alpha.one.ours[1])
 #nulls$dirprob <- 1:nrow(nulls) %>% purrr::map(.f=function(i) pval3(nulls$pick[i], K=nulls$n[i], alpha=nulls$alpha[i])) %>% unlist()
 #qplot(dirprob, data=nulls, binwidth=.035)
 @
 
-Minimum of $m-1$ (independent - violated!) uniformly distributed variables $X_i$ is
 \[
 P( \min_i X_i \le x) = 1 - (1-x)^{m-1}.
 \]
@@ -442,18 +487,18 @@ For $K=1$ we have an expected value of $E[X^{(1)}] = \frac{m-1}{m}$.
 
 \subsection{Estimation of the concentration parameter}
 
-Let $P_1, ..., P_n$ be the vectors of observed picking probabilities for $n$ lineups, i.e. for  lineup \#$i$ we have a vector $P_i = (p_1, ..., p_{m})$ of probabilities for picking null panel $j = 1, ..., m$ in the lineup.
+Let $P_1, ..., P_n$ be the vectors of observed picking probabilities for $n$ lineups, i.e. for  lineup \#$i$ we have a vector $P_i = (p_1, ..., p_{m_o})$ of probabilities for picking null panel $j = 1, ..., m_o$ in the lineup, where ${m_o}$ is the number of null plots in the lineup of size $m$.
 
 Assuming a symmetric Dirichlet distribution we estimate the concentration parameter $\alpha$ using a maximum likelihood approach as:
 \begin{eqnarray*}
 {\cal L}(\alpha; P_1, ..., P_n) &=& \prod_{j=1}^n
-\frac{\Gamma(\alpha m)}{\Gamma(\alpha)^m} \prod_{j=1}^m p_{ij}^{\alpha-1} \\
-&=& \frac{\Gamma(\alpha m)^n}{\Gamma(\alpha)^{mn}} \prod_{j=1}^n \prod_{i=1}^m p_{ij}^{\alpha-1}
+\frac{\Gamma(\alpha m_o)}{\Gamma(\alpha)^{m_o}} \prod_{j=1}^{m_o} p_{ij}^{\alpha-1} \\
+&=& \frac{\Gamma(\alpha {m_o})^n}{\Gamma(\alpha)^{m_on}} \prod_{j=1}^n \prod_{i=1}^{m_o} p_{ij}^{\alpha-1}
 \end{eqnarray*}
 
 The corresponding log likelihood function is then
 \begin{eqnarray*}
-\log {\cal L}(\alpha; P_1, ..., P_n) &=& n \log \Gamma(\alpha m) - nm \log \Gamma(\alpha) + (\alpha-1) \sum_{i,j} \log p_{ij}
+\log {\cal L}(\alpha; P_1, ..., P_n) &=& n \log \Gamma(\alpha {m_o}) - n{m_o} \log \Gamma(\alpha) + (\alpha-1) \sum_{i,j} \log p_{ij}
 \end{eqnarray*}
 Let $\psi(x)$ denote the \emph{digamma} function. Digamma is defined as the derivative of the log Gamma function, i.e.
 \[
@@ -461,7 +506,7 @@ Let $\psi(x)$ denote the \emph{digamma} function. Digamma is defined as the deri
 \]
 With this definition the maximum likelihood estimate $\hat{\alpha}$ of the concentration parameter $\alpha$ is the solution to
 \[
-\psi(\alpha) - \psi(m\alpha) = \frac{1}{mn} \sum_{i,j} \log p_{ij}
+\psi(\alpha) - \psi({m_o}\alpha) = \frac{1}{{m_o}n} \sum_{i,j} \log p_{ij}
 \]
 
 \begin{figure}
