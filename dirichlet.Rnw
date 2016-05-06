@@ -494,8 +494,7 @@ Let $P_1, ..., P_n$ be the vectors of observed picking probabilities for $n$ lin
 Assuming a symmetric Dirichlet distribution we estimate the concentration parameter $\alpha$ using a maximum likelihood approach as:
 \begin{eqnarray*}
 {\cal L}(\alpha; P_1, ..., P_n) &=& \prod_{j=1}^n
-\frac{\Gamma(\alpha m_o)}{\Gamma(\alpha)^{m_o}} \prod_{j=1}^{m_o} p_{ij}^{\alpha-1} \\
-&=& \frac{\Gamma(\alpha {m_o})^n}{\Gamma(\alpha)^{m_on}} \prod_{j=1}^n \prod_{i=1}^{m_o} p_{ij}^{\alpha-1}
+\frac{\Gamma(\alpha m_o)}{\Gamma(\alpha)^{m_o}} \prod_{j=1}^{m_o} p_{ij}^{\alpha-1} = \frac{\Gamma(\alpha {m_o})^n}{\Gamma(\alpha)^{m_on}} \prod_{j=1}^n \prod_{i=1}^{m_o} p_{ij}^{\alpha-1}
 \end{eqnarray*}
 
 The corresponding log likelihood function is then
@@ -548,6 +547,23 @@ summary(res)
 \caption{Density plots of estimates of the concentration parameter $\alpha$ based on 1,000 single instances of $P$. }
 \end{figure}
 
+\subsubsection*{Variation of the estimation in the presence of weights}
+Assume that $P_1, ..., P_n$ are observed $w_1, ..., w_n$ number of times, where $w_j \ge 0$  for all $j = 1, ..., n$. 
+The likelihood function then changes to 
+
+\begin{eqnarray*}
+{\cal L}(\alpha; P_1, ..., P_n) &=& \frac{\Gamma(\alpha {m_o})^{\sum_j w_j}}{\Gamma(\alpha)^{m_o\sum_j w_j}} \prod_{j=1}^n \prod_{i=1}^{m_o} p_{ij}^{{w_j}(\alpha-1)}
+\end{eqnarray*}
+Let $w$ be the sum of the weights $w = \sum_j w_j$, then for the log likelihood using weights we get
+\begin{eqnarray*}
+\log {\cal L}(\alpha; P_1, ..., P_n) &=&  w \log \Gamma(\alpha {m_o}) - w {m_o} \log \Gamma(\alpha) + (\alpha-1) \sum_{i,j} w_j \log p_{ij}
+\end{eqnarray*}
+
+The ML estimate of the concentration parameter $\alpha$ then becomes the solution of the weighted expression
+\[
+\psi(\alpha) - \psi({m_o}\alpha) = \frac{1}{{m_o} w} \sum_{i,j} w_j \log p_{ij}.
+\]
+What becomes obvious from the expression is that the concentration parameter is independent of the overall sum of the weights $w$, and only relative differences between the $w_j$ are regarded. 
 
 \subsection{Summary of all concentration parameters and $p$-values}
 
