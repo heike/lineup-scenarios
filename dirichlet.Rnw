@@ -116,6 +116,7 @@ alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
   if (is.null(dim(p))) {
     m <- length(p)
     n <- 1
+    p <- matrix(p, nrow=1)
   } else {
     n <- dim(p)[1]
     m <- dim(p)[2]
@@ -240,7 +241,6 @@ P(X_m = x \mid p_m) = {K \choose x} p_m^x (1-p_m)^{K-x}
 P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\ \nonumber
 &=& {K \choose x} \int_0^1  p_m^x (1-p_m)^{K-x} f(p_m) dp_m \\ \nonumber
 &=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \int_0^1  p_m^x (1-p_m)^{K-x} p_m^{\alpha-1} (1-p_m)^{(m-1)\alpha-1} dp_m \\ \nonumber
-&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)}  \int_0^1  p_m^{x+\alpha-1} (1-p_m)^{K-x + (m-1)\alpha-1} dp_m \\
 &=& {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} \label{eq:vs3}
 \end{eqnarray}
 These probabilities are shown in Figure~\ref{fig:xm}. Depending on the rate $\alpha$ they are quite different from Binomial probabilities.
@@ -329,7 +329,8 @@ Scenario II is the situation, where we keep the same data plot in the lineup, bu
 <<ex-elect, echo=FALSE>>=
 # needs to be put into data folder - but please don't put this data onto the repo
 raw11 <- read.csv("data/corrected_data_turk11.csv", stringsAsFactors = FALSE)
-elect <- raw11[grep("autismfanned2", as.character(raw11$param_value)),]
+
+elect <- raw11 #[grep("electoral", as.character(raw11$param_value)),]
 response <- strsplit(elect$response_no, split=",")
 elect$weight <- response %>% purrr::map(.f = length) %>% unlist()
 bigelect <- elect %>% purrr::map(.f = function(x) rep(x, elect$weight)) %>% data.frame()
@@ -340,18 +341,21 @@ filler <- data.frame(expand.grid(
   param_value=unique(bigelect$param_value),
   response_no=1:20))
 bigelect <- merge(bigelect, filler, by=c("param_value", "response_no"), all=TRUE)
+bigelect$example <- gsub("(.*)-[1-5]","\\1", as.character(bigelect$param_value))
 bigelect$weight[is.na(bigelect$weight)] <- 0
 bigelect <- bigelect %>% group_by(param_value) %>%
   mutate(plot_location=na.omit(plot_location)[1])
 bigelect$correct <- with(bigelect, !(response_no!=plot_location))
 
+all <- bigelect
+bigelect <- subset(bigelect, example=="electoral")
 
 pars <- bigelect %>% filter(correct!=TRUE) %>% select(param_value, response_no, weight) %>% 
-  split(.$param_value) %>%
+  split(.$param_value, drop=TRUE) %>%
   purrr::map(.f = function(x) {
     x$id <- 1:nrow(x)
     dir <- tidyr::spread(x, key=response_no, value=weight, fill=0)
-    sirt::dirichlet.mle(dir[,-(1:2)])
+    sirt::dirichlet.mle(dir[,-(1:3)])
   })
 
 
@@ -366,7 +370,7 @@ ns$dirprob <- 1:nrow(ns) %>% purrr::map(.f=function(i) pval3(ns$detected[i], K=n
 @
 
 <<ex-elect-table, dependson='ex-elect', echo=FALSE, results='asis'>>=
-xtable(ns, digits=c(0,0,0, 1, 4,4))
+xtable(ns, digits=c(0,0,0, 1, 4,5))
 @
 
 
@@ -403,8 +407,6 @@ ns$pval2 <- 1:nrow(ns) %>%
 ns <- ns %>% select(-c(alpha, dirprob, dirprob2))
 xtable(ns, digits=c(0,0,0,1,4,4,4,4))
 pval3(sum(ns$detected), K=sum(ns$n), alpha=ns$alpha.one.ours[1])
-#nulls$dirprob <- 1:nrow(nulls) %>% purrr::map(.f=function(i) pval3(nulls$pick[i], K=nulls$n[i], alpha=nulls$alpha[i])) %>% unlist()
-#qplot(dirprob, data=nulls, binwidth=.035)
 @
 
 \[
@@ -546,6 +548,48 @@ summary(res)
 \caption{Density plots of estimates of the concentration parameter $\alpha$ based on 1,000 single instances of $P$. }
 \end{figure}
 
+
+\subsection{Summary of all concentration parameters and $p$-values}
+
+<<pvals,echo=FALSE, results='asis'>>=
+ns <- all %>% split(.$param_value) %>% purrr::map_df(
+  function(x) {
+    nulls <- subset(x, !correct)
+    alpha = alpha.ml(as.vector(xtabs(weight~response_no, data=nulls))/sum(nulls$weight))
+    data.frame(
+      K=sum(x$weight), 
+      x=sum(subset(x,correct)$weight),  
+      alpha=alpha,
+      pval=pval3(
+        x=sum(subset(x,correct)$weight),
+        K=sum(x$weight), 
+        alpha=alpha
+                 )
+      )
+  }, .id="param_value") 
+
+ns$example <- gsub("(.*)-[1-6]","\\1",as.character(ns$param_value))
+
+xpls <- all %>% split(.$example) %>% purrr::map_df(
+  function(x) {
+    nulls <- subset(x, !correct)
+    lps <- xtabs(weight~factor(param_value)+response_no, data=nulls)
+    alpha = alpha.ml(lps/rowSums(lps))
+    data.frame(
+#      K=sum(x$weight), 
+#      x=sum(subset(x,correct)$weight),  
+      alpha.overall=alpha,
+      pval.overall=pval3(
+        x=sum(subset(x,correct)$weight),
+        K=sum(x$weight), 
+        alpha=alpha
+                 )
+      )
+  }, .id="example") 
+ns <- merge(ns, xpls, by="example")
+xtable(ns[,-1], digits=c(0,0,0,1,4,4,4,4))
+
+@
 
 \bibliographystyle{asa}
 \bibliography{references}
