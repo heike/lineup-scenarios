@@ -32,6 +32,10 @@
 % Define new environment
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{algorithm}[theorem]{Algorithm}
+
+\newtheorem{dfkT}[theorem]{Definition}
+\newenvironment{dfn} {\begin{dfkT} \rm\hfill\\}{\end{dfkT}}
+
 %---------------------------------------------------
 
 %\pdfminorversion=4
@@ -134,6 +138,34 @@ alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
 }
 @
 
+\section{Introduction}
+
+When drawing inference in the setting of a visual triangle test, we have to further consider the exact procedure with which we collect information from  observers. In this paper, we want to distinguish between  three main scenarios:
+
+\begin{itemize}
+\item Scenario I\\
+$K$ different lineups are shown to $K$ independent individuals. 
+%$X$ defined as the number of times an individual picked the data plot, follows under the null hypothesis that the observed data is consistent with the null data a Binomial distribution, with $X \sim B_{K, p=1/3}$. 
+\item Scenario II\\
+Lineups consisting of the same data, but different null plots are shown to $K$ independent individuals. 
+\item Scenario III\\
+The same lineup (same data, same nulls) is shown to $K$ independent individuals.
+\end{itemize}
+For scenario I, we need a model for generating a set of new `data' for each lineup; this scenario is therefore only practical in a simulation or sampling setting. 
+
+The distribution of the number of picks of the data plot depends on the specific scenario used in an experiment. To that effect we define a general {\it visual inference} distribution:
+\begin{dfn}
+Let $X$ be the number of picks of the data plot from a lineup of size $m$ evaluated by $K$ observers. The distribution of $X$ is denoted as the {\it visual inference distribution}
+\[
+X \sim V_{K, m, \alpha, s}
+\]
+where $\alpha$ is a concentration parameter with $\alpha > 0$, and
+$s$ is the scenario ($s = I, II,$ or $III$) as defined above.
+\end{dfn}
+We will see in section~\ref{binomial} that under scenario I the visual inference distribution is the same as the Binomial distribution, ie~$V_{K, m, 1} \equiv B_{K, 1/m}$ for any concentration parameter $\alpha>0$.
+For scenarios II and III the number of picks of the data plot does not follow a binomial distribution, as can also be seen from the simulation results shown in table~\ref{tab:nobinom}, consisting of a side-by-side comparison of the probability to observe exactly $x$ data detections (out of 10 evaluations) under each of the three different scenarios. %For the purpose of this paper we will only consider $V$ distributions for lineups of size $m=20$. 
+
+
 \section{Rough thoughts on the model}
 
 
@@ -205,18 +237,18 @@ P(X_m = x \mid p_m) = {K \choose x} p_m^x (1-p_m)^{K-x}
 
 \hh{************************}
 
-\begin{eqnarray*}
-P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\
-&=& {K \choose x} \int_0^1  p_m^x (1-p_m)^{K-x} f(p_m) dp_m \\
-&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \int_0^1  p_m^x (1-p_m)^{K-x} p_m^{\alpha-1} (1-p_m)^{(m-1)\alpha-1} dp_m \\
+\begin{eqnarray}\nonumber
+P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\ \nonumber
+&=& {K \choose x} \int_0^1  p_m^x (1-p_m)^{K-x} f(p_m) dp_m \\ \nonumber
+&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \int_0^1  p_m^x (1-p_m)^{K-x} p_m^{\alpha-1} (1-p_m)^{(m-1)\alpha-1} dp_m \\ \nonumber
 &=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)}  \int_0^1  p_m^{x+\alpha-1} (1-p_m)^{K-x + (m-1)\alpha-1} dp_m \\
-&=& {K \choose x} \frac{1}{B\left(\alpha, (m-1)\alpha\right)} \cdot B\left(x+\alpha, K-x + (m-1)\alpha \right)  \\
-&=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(K+m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha + K-x)}{\Gamma((m-1)\alpha)} \cdot \frac{\Gamma(\alpha+x)}{\Gamma(\alpha)}  \\
-\end{eqnarray*}
+&=& {K \choose x} \frac{B\left(x+\alpha, K-x + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)} \label{eq:vs3}
+\end{eqnarray}
 These probabilities are shown in Figure~\ref{fig:xm}. Depending on the rate $\alpha$ they are quite different from Binomial probabilities.
 But for large values of $\alpha$ the densities converge in distribution to the Binomial with parameters $K$ and probability of success $p = 1/m$, because we can write $\Gamma(x + \alpha) = \prod_{i=0}^{x-1}(x + \alpha) \Gamma(\alpha)$ for any non-negative integer $x \ge 0$. Therefore the probability for  $x$ data detections becomes
 \begin{eqnarray*}
-P(X_m = x) &=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(m\alpha) \prod_{i=0}^{K-1} (i + m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha) \prod_{i=0}^{K-x-1} ((m-1)\alpha + i)}{\Gamma((m-1)\alpha)} \cdot \\
+P(X_m = x) &=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(K+m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha + K-x)}{\Gamma((m-1)\alpha)} \cdot \frac{\Gamma(\alpha+x)}{\Gamma(\alpha)}  \\
+&=& {K \choose x} \frac{\Gamma(m\alpha)}{\Gamma(m\alpha) \prod_{i=0}^{K-1} (i + m\alpha)} \cdot  \frac{\Gamma((m-1)\alpha) \prod_{i=0}^{K-x-1} ((m-1)\alpha + i)}{\Gamma((m-1)\alpha)} \cdot \\
 && \frac{\Gamma(\alpha) \prod_{i=0}^{x-1} (\alpha + i)}{\Gamma(\alpha)} \\
 &=& {K \choose x} \frac{\prod_{i=0}^{K-x-1} ((m-1)\alpha + i) \prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{K-1} (i + m\alpha)} \\
 &=& {K \choose x} \frac{\prod_{i=0}^{x-1} (\alpha + i)}{\prod_{i=0}^{x-1} (i + m\alpha)} \cdot 
@@ -298,7 +330,7 @@ Scenario II is the situation, where we keep the same data plot in the lineup, bu
 <<ex-elect, echo=FALSE>>=
 # needs to be put into data folder - but please don't put this data onto the repo
 raw11 <- read.csv("data/corrected_data_turk11.csv", stringsAsFactors = FALSE)
-elect <- raw11[grep("electoral", as.character(raw11$param_value)),]
+elect <- raw11[grep("autismfanned2", as.character(raw11$param_value)),]
 response <- strsplit(elect$response_no, split=",")
 elect$weight <- response %>% purrr::map(.f = length) %>% unlist()
 bigelect <- elect %>% purrr::map(.f = function(x) rep(x, elect$weight)) %>% data.frame()
@@ -315,10 +347,12 @@ bigelect <- bigelect %>% group_by(param_value) %>%
 bigelect$correct <- with(bigelect, !(response_no!=plot_location))
 
 
-pars <- bigelect %>% filter(correct!=TRUE) %>% split(.$param_value) %>%
+pars <- bigelect %>% filter(correct!=TRUE) %>% select(param_value, response_no, weight) %>% 
+  split(.$param_value) %>%
   purrr::map(.f = function(x) {
+    x$id <- 1:nrow(x)
     dir <- tidyr::spread(x, key=response_no, value=weight, fill=0)
-    sirt::dirichlet.mle(dir[,23:41])
+    sirt::dirichlet.mle(dir[,-(1:2)])
   })
 
 
@@ -358,7 +392,7 @@ nulls$perc <- with(nulls, pick/n)
 null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0) # filling with 0 isn't quite right
 one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
 one_par$alpha0/19
-ns$alpha.ours <- 1:5 %>% purrr::map(function(i) alpha.ml(null_means[i,2:21])) %>% unlist
+ns$alpha.ours <- 1:nrow(null_means) %>% purrr::map(function(i) alpha.ml(null_means[i,2:21])) %>% unlist
 ns$alpha.one.ours <- alpha.ml(null_means[,2:21], weight=ns$n-ns$detected)
 
 ns$dirprob2 <- 1:nrow(ns) %>%
