@@ -183,7 +183,8 @@ For all  Dirichlet distributions hold, that the margins $p_i$ are distributed ac
 
 \hh{XXX what meaning does the rate $\alpha$ have in the lineup setting? I would like to be able to say that $m\alpha$ is the number of 'interesting' looking null plots that we see on average in a lineup of size $m$. }
 
-Figure~\ref{fig:simplex} shows examples of three Dirichlet distributions on $S(2)$ with different rates.
+Figure~\ref{fig:simplex} shows examples of three Dirichlet distributions on $S(2)$ with different rates. Because we are dealing with a symmetric Dirichlet distribution, we can order each sample's values from highest to lowest. This forces all samples to appear in just one segment of the simplex (see Figure~\ref{fig:simplex.sorted}) and we can visualise each sample as a non-increasing line in a parallel coordinate plot where each of the margins represents one axis. Now the concentration parameter $\alpha$ corresponds to the rate at which these lines decrease: for $\alpha \to 0$ the Dirichlet distribution converges to a Dirac delta distribution, which in the sorted situation corresponds to $p(1) = 1$, while for  $\alpha to \infty$ all lines flatten out to a line in $1/m$.
+Note that the vsiualisation approach based on parallel coordinate plots is readily extensible for higher number of dimensions.  
 
 \begin{figure}
 \begin{subfigure}[t]{\textwidth}
@@ -217,13 +218,47 @@ qplot(data=betas, p, y=density, geom="polygon", fill=I("grey50"), alpha=I(.8), c
   ylab("density") + facet_wrap(~alphalabel, labeller="label_parsed") + ggplot2::theme_bw()
 @
 \end{subfigure}
-\caption{\label{fig:simplex}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$. Because the points lie on The lines mark the boundaries of the $S(2)$ simplex. Bottom row: marginal distributions of each of the $X_i$.}
+\caption{\label{fig:simplex}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$.  Bottom row: marginal distributions of the Dirichlet distribution.}
+\end{figure}
+
+
+\begin{figure}
+\begin{subfigure}[t]{\textwidth}
+\caption{Dirichlet samples ordered from highest to lowest values. }
+<<simplex-sorted, echo=FALSE, out.width='\\textwidth', fig.width=12, fig.height=4>>=
+simplex$id <- 1:nrow(simplex)
+dirichlets <- simplex %>% 
+  gather(key=margin, value=probs, starts_with("p"))
+
+simplex.sorted <- dirichlets %>% 
+  group_by(alphalabel, id) %>% 
+  mutate(probs = sort(probs, decreasing=TRUE)) %>%
+  spread(key=margin, value=probs)
+
+
+ggtern::ggtern(aes(x=p1, y=p2, z=p3), data=simplex.sorted) +
+  geom_point(alpha=I(.2)) + facet_wrap(~alphalabel, labeller="label_parsed") +
+  theme_bw() +
+  theme(panel.background=element_rect(colour="black"))
+@
+\end{subfigure}
+\begin{subfigure}[t]{\textwidth}
+\caption{Parallel Coordinate plots of ordered Dirichlet samples.}
+<<parallelograms, echo=FALSE, out.width='\\textwidth', fig.width=12, fig.height=4>>=
+dirichlets <- simplex.sorted %>% 
+  gather(key=margin, value=probs, starts_with("p"))
+
+ggplot(aes(x=margin, y=probs), data=dirichlets) + 
+  geom_line(aes(group=id), alpha=0.1) +
+  facet_wrap(~alphalabel) +
+  ggplot2::theme_bw()
+@
+\end{subfigure}
+\caption{\label{fig:simplex.sorted}Top row: Samples of 1000 points each from a $Dir(\alpha)$ distribution using different rate parameters $\alpha$.  Bottom row: marginal distributions of the Dirichlet distribution.}
 \end{figure}
 
 
 
-\hh{Does it matter how the lineup protocol is administered in terms of our scenarios 1, 2, 3? XXX Yes it does! and it is beautiful!!!! XXX Under what circumstances does the number of data picks become a Binomial distribution again?
-What is the general distribution of the number of data picks under the null hypothesis? - we can probably derive that distribution from the marginal distribution of the multinomial-Dirichlet model.}
 
 \subsection{Scenario III}
 
@@ -235,7 +270,6 @@ $X_m \mid p_m \sim \text{Binom}_{K, p_m}$
 P(X_m = x \mid p_m) = {K \choose x} p_m^x (1-p_m)^{K-x}
 \]
 
-\hh{************************}
 
 \begin{eqnarray}\nonumber
 P(X_m = x) &=& E\left[ P(X_m = x \mid p_m) \right]   \\ \nonumber
@@ -263,13 +297,10 @@ In the situation that the concentration parameter goes to infinity, the limiting
 \end{eqnarray*}
 
 
-
-\hh{What is the expected value of $X_m$? - that might give us a nice interpretation of $\alpha$.}
-
+The expected value is derived in section~\ref{sec:expected}.
 
 
 
-\hh{************************}
 
 \begin{figure}
 <<xm, echo=FALSE, fig.width=8, fig.height=3, out.width='\\textwidth'>>=
@@ -475,7 +506,7 @@ By induction over $K$ therefore follows that $P(X^{(K)} = x)$ is a probability m
 % &=& \frac{\Gamma(\alpha) \Gamma(1 + (m-1)\alpha) \Gamma(m\alpha)}{ \Gamma(\alpha + 1 + (m-1)\alpha ) \Gamma(\alpha) \Gamma((m-1)\alpha)}
 % \begin{eqnarray*}
 
-\subsection{Expected value of the number of data detection in scenario III under the null hypothesis}
+\subsection{Expected value of the number of data detection in scenario III under the null hypothesis}\label(sec:expected)
 For the expected number of  data detections in $K$ evaluations of scenario III under the null hypothesis we get the following recursive expression:
 \begin{eqnarray*}
 E[X^{(K)}] &=& \sum_{x = 0}^K x P(X{(K)} = x) = \sum_{x = 1}^K x P(X{(K)} = x) \\
@@ -603,10 +634,24 @@ xpls <- all %>% split(.$example) %>% purrr::map_df(
       )
   }, .id="example") 
 ns <- merge(ns, xpls, by="example")
-xtable(ns[,-1], digits=c(0,0,0,1,4,4,4,4))
-
 @
 
+<<tab-alpha, echo=FALSE, results='hide', dependson='pvals'>>=
+xtable(ns[,-1], digits=c(0,0,0,1,4,4,4,4))
+@
+
+\begin{figure}
+\centering
+<<fig-alpha, echo=FALSE, dependson='pvals', out.width='.5\\linewidth'>>=
+ns$example <- reorder(ns$example, ns$alpha)
+qplot(example, alpha, data=ns) +
+  theme_bw() + expand_limits(y=c(0,NA)) +
+  geom_point(aes(y=alpha.overall), colour="orange", pch="x", size=5) +
+  coord_flip() + xlab("") +
+  ylab("Concentration parameter alpha")
+@
+\caption{\label{fig:alphas} Summary of concentration parameters $\alpha$ estimated based on individual lineups (dark circles) compared to overall estimates (colored crosses).}
+\end{figure}
 \bibliographystyle{asa}
 \bibliography{references}
 
