@@ -97,6 +97,13 @@ Graphics play a crucial role in statistical analysis and data mining. Being able
 
 \tableofcontents
 \newpage
+\hh{todo-list
+\begin{itemize}
+\item discuss how multiple selections fit into the framework
+\item does the distribution for the number of data detections extend to a non-integer number of picks (because of the weights)?
+\item intro needs expansion: start with general intro on visual inference
+\item re-analyze previous p-values and compare to metrics
+\end{itemize}}
 
 <<setup, echo = FALSE, message = FALSE, warning = FALSE>>=
 options(replace.assign=TRUE,width=70, digits=2)
