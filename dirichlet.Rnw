@@ -642,15 +642,29 @@ xtable(ns[,-1], digits=c(0,0,0,1,4,4,4,4))
 
 \begin{figure}
 \centering
-<<fig-alpha, echo=FALSE, dependson='pvals', out.width='.5\\linewidth'>>=
+\begin{subfigure}[t]{.45\linewidth}
+\caption{Concentration parameters}
+<<fig-alpha, echo=FALSE, dependson='pvals', out.width='\\linewidth'>>=
 ns$example <- reorder(ns$example, ns$alpha)
 qplot(example, alpha, data=ns) +
-  theme_bw() + expand_limits(y=c(0,NA)) +
+  ggplot2::theme_bw() + expand_limits(y=c(0,NA)) +
   geom_point(aes(y=alpha.overall), colour="orange", pch="x", size=5) +
   coord_flip() + xlab("") +
   ylab("Concentration parameter alpha")
 @
-\caption{\label{fig:alphas} Summary of concentration parameters $\alpha$ estimated based on individual lineups (dark circles) compared to overall estimates (colored crosses).}
+\end{subfigure}
+\begin{subfigure}[t]{.45\linewidth}
+\caption{Visual $p$-values}
+<<fig-pvals, echo=FALSE, dependson='pvals', out.width='\\linewidth'>>=
+#ns$example <- reorder(ns$example, ns$alpha)
+qplot(example, pval, data=ns, geom="jitter", width=0.2) +
+  ggplot2::theme_bw() + expand_limits(y=c(0,NA)) +
+  geom_point(aes(y=pval.overall), colour="orange", pch="x", size=5) +
+  coord_flip() + xlab("") +
+  ylab("P-value")
+@
+\end{subfigure}
+\caption{\label{fig:comparisons} Summaries of concentration parameters and $p$-values based on individual lineups (dark circles) and overall values for each of the examples (colored crosses).}
 \end{figure}
 \bibliographystyle{asa}
 \bibliography{references}
