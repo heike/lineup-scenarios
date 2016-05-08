@@ -154,7 +154,15 @@ Exploratory data analysis (EDA), an important component of data science (DS), to
 
 The lineup protocol requires that a data plot is shown as part of a page of plots, where the other plots on the page are produced assuming a null model. The process can be as simple as showing a scatterplot of two variables, embedded among null scatterplots produced by permuting one of the variables. Any `real' association between the two variables has been broken by the permutation, so if the data plot stands out as being different from the null plots, we would have evidence to say that the two variables are associated. `Associated' may take many forms, e.g. linear relationship, an outlier or few, clustering, nonlinear relation, and the beauty of the lineup protocol is that this does not need to be specified ahead of time. The alternative hypothesis can emcompass a variety of departures from a null, and thus support graphics as a part of exploring data.
 
-The lineup protocol has been used in a variety of ways to date. \citet{yin:2013} describe the use of the protocol to evaluate if there is any structure in the results from a high-throughput RNA-Seq analysis experiment. \citet{loy:2015} describes the use of the lineup protocol to read residual plots from a hierarchical linear model, actually to show that the typical residual plot is misleading when trying to assess normality. In a departure from EDA towards visual communication, \citet{hofmann:2012} describes computing power of a plot design, using the lineup protocol to determine the best way to communicate information visually.
+The lineup protocol has been used in a variety of ways to date. \citet{yin:2013} use it to evaluate if there is any structure in the results from a high-throughput RNA-Seq analysis experiment. \citet{loy:2015} describes the use of the lineup protocol to read residual plots from a hierarchical linear model, actually to show that the typical residual plot is misleading when trying to assess normality. \citet{lin:2014} use the lineup protocol with longitudinal data to explore cluster patterns.
+
+\citet{Cheng:2013} utilise lineups to examine mountaineering.
+
+\citet{Hullman:2015} discuss lineups in relation to Hypothetical Outcome Plots.
+
+In a departure from EDA towards visual communication, \citet{hofmann:2012} describes computing power of a plot design, using the lineup protocol to determine the best way to communicate information visually.
+
+\citet{zhao:2014}examined how people read lineups, using an eyetracker. \citet{Healy:2014} summarises the importance for sociology researchers.
 
 ing the ‘interesting’ feature in the data is inserted randomly among a set of plots showing data that is consistent with a null hypothesis of ‘there is nothing interesting in the plot’. This null hypothesis is intentionally vague, in order for it to allow testing for a multitude of visual features. Obviously, being able to generate data that is consistent with the null hypothesis is crucial for
 1
