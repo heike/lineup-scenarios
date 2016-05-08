@@ -62,13 +62,16 @@
 
 \if0\blind
 {
-  \title{\bf Visual inference on different lineup scenarios}
+  \title{\bf Estimating $P$-values for the Lineup Protocol, to Determine Significance of Structure in Data Plots}
   \author{Heike Hofmann, Christian R\"ottger, Dianne Cook \thanks{
     The authors gratefully acknowledge funding from the National Science Foundation Grant \# DMS 1007697. All data collection has been conducted with approval from the Institutional Review Board IRB 10-347}\hspace{.2cm}\\
     Department of Statistics and Statistical Laboratory, Iowa State University\\
     and \\
     \\
-    Department of Statistics and Statistical Laboratory, Iowa State University}
+    Department of Mathematics, Iowa State University\\
+    and \\
+    \\
+    Department of Econometrics and Business Statistics, Monash University}
   \maketitle
 } \fi
 
@@ -78,7 +81,7 @@
   \bigskip
   \bigskip
   \begin{center}
-    {\LARGE\bf Visual inference on different lineup scenarios}
+    {\LARGE\bf Estimating $P$-values for the Lineup Protocol, to Determine Significance of Structure in Data Plots}
 \end{center}
   \medskip
 } \fi
@@ -130,7 +133,7 @@ alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
   }
   if (is.null(weight)) weight <- rep(1, n)
   else n <- sum(weight)
-  
+
   ps <- p
   ps[p < eps] <- eps # make sure we don't take the log of 0
   ps <- ps/rowSums(ps)
@@ -147,18 +150,28 @@ alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
 
 \section{Introduction}
 
+Exploratory data analysis (EDA), an important component of data science (DS), today, relies heavily on data visualization, which traditionally, is not associated with the rigorous protocols of statistical inference. The lineup protocol introduced by \citep{buja} and validated in simulation settings by \citep{Mahbub} places data visualization into a framework of statistical inference, and thus provides a way to quantify the findings that are made by graphics. To imagine the importance of this, put yourself in the position of teaching new statisticians how to read residual plots to diagnose a linear model. With the lineup protocol, the residual plot can be furnished with an associated $p$-value that can tell you whether the pattern follows the model error assumptions. The lineup protocol allows us to furnish graphical findings with objective numerical values proportional to their significance similar to conventional hypothesis tests.
+
+The lineup protocol requires that a data plot is shown as part of a page of plots, where the other plots on the page are produced assuming a null model. The process can be as simple as showing a scatterplot of two variables, embedded among null scatterplots produced by permuting one of the variables. Any `real' association between the two variables has been broken by the permutation, so if the data plot stands out as being different from the null plots, we would have evidence to say that the two variables are associated. `Associated' may take many forms, e.g. linear relationship, an outlier or few, clustering, nonlinear relation, and the beauty of the lineup protocol is that this does not need to be specified ahead of time. The alternative hypothesis can emcompass a variety of departures from a null, and thus support graphics as a part of exploring data.
+
+The lineup protocol has been used in a variety of ways to date. \citet{yin:2013} describe the use of the protocol to evaluate if there is any structure in the results from a high-throughput RNA-Seq analysis experiment. \citet{loy:2015} describes the use of the lineup protocol to read residual plots from a hierarchical linear model, actually to show that the typical residual plot is misleading when trying to assess normality. In a departure from EDA towards visual communication, \citet{hofmann:2012} describes computing power of a plot design, using the lineup protocol to determine the best way to communicate information visually.
+
+ing the ‘interesting’ feature in the data is inserted randomly among a set of plots showing data that is consistent with a null hypothesis of ‘there is nothing interesting in the plot’. This null hypothesis is intentionally vague, in order for it to allow testing for a multitude of visual features. Obviously, being able to generate data that is consistent with the null hypothesis is crucial for
+1
+creating a lineup, and often times it is the null model that introduces some restrictions towards the features we can test.
+In most experimental situations, lineups of size m = 20 are used. This size is convenient, because of its corresponding type I error rate (ie the probability of accidentally identifying the data plot, when guessing) of 1/20 = 0.05 based on a single evaluation. A major limiting factor in presenting lineups to participants in a study is mental fatigue, which sets in earlier for larger sized lineups because of the increased cognitive load. It is therefore of interest to investigate the option of using smaller sized lineups for studies. The smallest practical lineup size is three – ie a lineup consisting of two null plots and a randomly inserted data plot.
 When drawing inference in the setting of a visual triangle test, we have to further consider the exact procedure with which we collect information from  observers. In this paper, we want to distinguish between  three main scenarios:
 
 \begin{itemize}
 \item Scenario I\\
-$K$ different lineups are shown to $K$ independent individuals. 
-%$X$ defined as the number of times an individual picked the data plot, follows under the null hypothesis that the observed data is consistent with the null data a Binomial distribution, with $X \sim B_{K, p=1/3}$. 
+$K$ different lineups are shown to $K$ independent individuals.
+%$X$ defined as the number of times an individual picked the data plot, follows under the null hypothesis that the observed data is consistent with the null data a Binomial distribution, with $X \sim B_{K, p=1/3}$.
 \item Scenario II\\
-Lineups consisting of the same data, but different null plots are shown to $K$ independent individuals. 
+Lineups consisting of the same data, but different null plots are shown to $K$ independent individuals.
 \item Scenario III\\
 The same lineup (same data, same nulls) is shown to $K$ independent individuals.
 \end{itemize}
-For scenario I, we need a model for generating a set of new `data' for each lineup; this scenario is therefore only practical in a simulation or sampling setting. 
+For scenario I, we need a model for generating a set of new `data' for each lineup; this scenario is therefore only practical in a simulation or sampling setting.
 
 The distribution of the number of picks of the data plot depends on the specific scenario used in an experiment. To that effect we define a general {\it visual inference} distribution:
 \begin{dfn}
@@ -170,7 +183,7 @@ where $\alpha$ is a concentration parameter with $\alpha > 0$, and
 $s$ is the scenario ($s = I, II,$ or $III$) as defined above.
 \end{dfn}
 We will see in section~\ref{binomial} that under scenario I the visual inference distribution is the same as the Binomial distribution, ie~$V_{K, m, 1} \equiv B_{K, 1/m}$ for any concentration parameter $\alpha>0$.
-For scenarios II and III the number of picks of the data plot does not follow a binomial distribution, as can also be seen from the simulation results shown in table~\ref{tab:nobinom}, consisting of a side-by-side comparison of the probability to observe exactly $x$ data detections (out of 10 evaluations) under each of the three different scenarios. %For the purpose of this paper we will only consider $V$ distributions for lineups of size $m=20$. 
+For scenarios II and III the number of picks of the data plot does not follow a binomial distribution, as can also be seen from the simulation results shown in table~\ref{tab:nobinom}, consisting of a side-by-side comparison of the probability to observe exactly $x$ data detections (out of 10 evaluations) under each of the three different scenarios. %For the purpose of this paper we will only consider $V$ distributions for lineups of size $m=20$.
 
 
 \section{Rough thoughts on the model}
@@ -191,7 +204,7 @@ For all  Dirichlet distributions hold, that the margins $p_i$ are distributed ac
 \hh{XXX what meaning does the rate $\alpha$ have in the lineup setting? I would like to be able to say that $m\alpha$ is the number of 'interesting' looking null plots that we see on average in a lineup of size $m$. }
 
 Figure~\ref{fig:simplex} shows examples of three Dirichlet distributions on $S(2)$ with different rates. Because we are dealing with a symmetric Dirichlet distribution, we can order each sample's values from highest to lowest. This forces all samples to appear in just one segment of the simplex (see Figure~\ref{fig:simplex.sorted}) and we can visualise each sample as a non-increasing line in a parallel coordinate plot where each of the margins represents one axis. Now the concentration parameter $\alpha$ corresponds to the rate at which these lines decrease: for $\alpha \to 0$ the Dirichlet distribution converges to a Dirac delta distribution, which in the sorted situation corresponds to $p(1) = 1$, while for  $\alpha to \infty$ all lines flatten out to a line in $1/m$.
-Note that the vsiualisation approach based on parallel coordinate plots is readily extensible for higher number of dimensions.  
+Note that the vsiualisation approach based on parallel coordinate plots is readily extensible for higher number of dimensions.
 
 \begin{figure}
 \begin{subfigure}[t]{\textwidth}
@@ -234,11 +247,11 @@ qplot(data=betas, p, y=density, geom="polygon", fill=I("grey50"), alpha=I(.8), c
 \caption{Dirichlet samples ordered from highest to lowest values. }
 <<simplex-sorted, echo=FALSE, out.width='\\textwidth', fig.width=12, fig.height=4>>=
 simplex$id <- 1:nrow(simplex)
-dirichlets <- simplex %>% 
+dirichlets <- simplex %>%
   gather(key=margin, value=probs, starts_with("p"))
 
-simplex.sorted <- dirichlets %>% 
-  group_by(alphalabel, id) %>% 
+simplex.sorted <- dirichlets %>%
+  group_by(alphalabel, id) %>%
   mutate(probs = sort(probs, decreasing=TRUE)) %>%
   spread(key=margin, value=probs)
 
@@ -252,10 +265,10 @@ ggtern::ggtern(aes(x=p1, y=p2, z=p3), data=simplex.sorted) +
 \begin{subfigure}[t]{\textwidth}
 \caption{Parallel Coordinate plots of ordered Dirichlet samples.}
 <<parallelograms, echo=FALSE, out.width='\\textwidth', fig.width=12, fig.height=4>>=
-dirichlets <- simplex.sorted %>% 
+dirichlets <- simplex.sorted %>%
   gather(key=margin, value=probs, starts_with("p"))
 
-ggplot(aes(x=margin, y=probs), data=dirichlets) + 
+ggplot(aes(x=margin, y=probs), data=dirichlets) +
   geom_line(aes(group=id), alpha=0.1) +
   facet_wrap(~alphalabel) +
   ggplot2::theme_bw()
@@ -388,7 +401,7 @@ bigelect$correct <- with(bigelect, !(response_no!=plot_location))
 all <- bigelect
 bigelect <- subset(bigelect, example=="electoral")
 
-pars <- bigelect %>% filter(correct!=TRUE) %>% select(param_value, response_no, weight) %>% 
+pars <- bigelect %>% filter(correct!=TRUE) %>% select(param_value, response_no, weight) %>%
   split(.$param_value, drop=TRUE) %>%
   purrr::map(.f = function(x) {
     x$id <- 1:nrow(x)
@@ -586,8 +599,8 @@ summary(res)
 \end{figure}
 
 \subsubsection*{Variation of the estimation in the presence of weights}
-Assume that $P_1, ..., P_n$ are observed $w_1, ..., w_n$ number of times, where $w_j \ge 0$  for all $j = 1, ..., n$. 
-The likelihood function then changes to 
+Assume that $P_1, ..., P_n$ are observed $w_1, ..., w_n$ number of times, where $w_j \ge 0$  for all $j = 1, ..., n$.
+The likelihood function then changes to
 
 \begin{eqnarray*}
 {\cal L}(\alpha; P_1, ..., P_n) &=& \frac{\Gamma(\alpha {m_o})^{\sum_j w_j}}{\Gamma(\alpha)^{m_o\sum_j w_j}} \prod_{j=1}^n \prod_{i=1}^{m_o} p_{ij}^{{w_j}(\alpha-1)}
@@ -601,7 +614,7 @@ The ML estimate of the concentration parameter $\alpha$ then becomes the solutio
 \[
 \psi(\alpha) - \psi({m_o}\alpha) = \frac{1}{{m_o} w} \sum_{i,j} w_j \log p_{ij}.
 \]
-What becomes obvious from the expression is that the concentration parameter is independent of the overall sum of the weights $w$, and only relative differences between the $w_j$ are regarded. 
+What becomes obvious from the expression is that the concentration parameter is independent of the overall sum of the weights $w$, and only relative differences between the $w_j$ are regarded.
 
 \subsection{Summary of all concentration parameters and $p$-values}
 
@@ -611,16 +624,16 @@ ns <- all %>% split(.$param_value) %>% purrr::map_df(
     nulls <- subset(x, !correct)
     alpha = alpha.ml(as.vector(xtabs(weight~response_no, data=nulls))/sum(nulls$weight))
     data.frame(
-      K=sum(x$weight), 
-      x=sum(subset(x,correct)$weight),  
+      K=sum(x$weight),
+      x=sum(subset(x,correct)$weight),
       alpha=alpha,
       pval=pval3(
         x=sum(subset(x,correct)$weight),
-        K=sum(x$weight), 
+        K=sum(x$weight),
         alpha=alpha
                  )
       )
-  }, .id="param_value") 
+  }, .id="param_value")
 
 ns$example <- gsub("(.*)-[1-6]","\\1",as.character(ns$param_value))
 
@@ -630,16 +643,16 @@ xpls <- all %>% split(.$example) %>% purrr::map_df(
     lps <- xtabs(weight~factor(param_value)+response_no, data=nulls)
     alpha = alpha.ml(lps/rowSums(lps))
     data.frame(
-#      K=sum(x$weight), 
-#      x=sum(subset(x,correct)$weight),  
+#      K=sum(x$weight),
+#      x=sum(subset(x,correct)$weight),
       alpha.overall=alpha,
       pval.overall=pval3(
         x=sum(subset(x,correct)$weight),
-        K=sum(x$weight), 
+        K=sum(x$weight),
         alpha=alpha
                  )
       )
-  }, .id="example") 
+  }, .id="example")
 ns <- merge(ns, xpls, by="example")
 @
 
