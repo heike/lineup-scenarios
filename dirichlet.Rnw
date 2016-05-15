@@ -152,17 +152,17 @@ alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
 
 Exploratory data analysis (EDA), an important component of data science (DS), today, relies heavily on data visualization, which traditionally, is not associated with the rigorous protocols of statistical inference. The lineup protocol introduced by \citep{buja} and validated in simulation settings by \citep{Mahbub} places data visualization into a framework of statistical inference, and thus provides a way to quantify the findings that are made by graphics. To imagine the importance of this, put yourself in the position of teaching new statisticians how to read residual plots to diagnose a linear model. With the lineup protocol, the residual plot can be furnished with an associated $p$-value that can tell you whether the pattern follows the model error assumptions. The lineup protocol allows us to furnish graphical findings with objective numerical values proportional to their significance similar to conventional hypothesis tests.
 
-The lineup protocol requires that a data plot is shown as part of a page of plots, where the other plots on the page are produced assuming a null model. The process can be as simple as showing a scatterplot of two variables, embedded among null scatterplots produced by permuting one of the variables. Any `real' association between the two variables has been broken by the permutation, so if the data plot stands out as being different from the null plots, we would have evidence to say that the two variables are associated. `Associated' may take many forms, e.g. linear relationship, an outlier or few, clustering, nonlinear relation, and the beauty of the lineup protocol is that this does not need to be specified ahead of time. The alternative hypothesis can emcompass a variety of departures from a null, and thus support graphics as a part of exploring data.
+The lineup protocol requires that a data plot is shown as part of a page of plots, where the other plots on the page are produced assuming a null model. The process can be as simple as showing a scatterplot of two variables, embedded among null scatterplots produced by permuting one of the variables. Any `real' association between the two variables has been broken by the permutation, so if the data plot stands out as being different from the null plots, we would have evidence to say that the two variables are associated. `Associated' may take many forms, e.g. linear relationship, an outlier or few, clustering, nonlinear relation, and the beauty of the lineup protocol is that this does not need to be specified ahead of time. The alternative hypothesis can encompass a variety of departures from a null, and thus support graphics as a part of exploring data.
 
 The lineup protocol has been used in a variety of ways to date. \citet{yin:2013} use it to evaluate if there is any structure in the results from a high-throughput RNA-Seq analysis experiment. \citet{loy:2015} describes the use of the lineup protocol to read residual plots from a hierarchical linear model, actually to show that the typical residual plot is misleading when trying to assess normality. \citet{lin:2014} use the lineup protocol with longitudinal data to explore cluster patterns.
 
-\citet{Cheng:2013} utilise lineups to examine mountaineering.
+\citet{Cheng:2013} utilize lineups to examine mountaineering.
 
 \citet{Hullman:2015} discuss lineups in relation to Hypothetical Outcome Plots.
 
 In a departure from EDA towards visual communication, \citet{hofmann:2012} describes computing power of a plot design, using the lineup protocol to determine the best way to communicate information visually.
 
-\citet{zhao:2014}examined how people read lineups, using an eyetracker. \citet{Healy:2014} summarises the importance for sociology researchers.
+\citet{zhao:2014}examined how people read lineups, using an eye-tracker. \citet{Healy:2014} summarizes the importance for sociology researchers.
 
 ing the ‘interesting’ feature in the data is inserted randomly among a set of plots showing data that is consistent with a null hypothesis of ‘there is nothing interesting in the plot’. This null hypothesis is intentionally vague, in order for it to allow testing for a multitude of visual features. Obviously, being able to generate data that is consistent with the null hypothesis is crucial for
 1
@@ -190,7 +190,7 @@ X \sim V_{K, m, \alpha, s}
 where $\alpha$ is a concentration parameter with $\alpha > 0$, and
 $s$ is the scenario ($s = I, II,$ or $III$) as defined above.
 \end{dfn}
-We will see in section~\ref{binomial} that under scenario I the visual inference distribution is the same as the Binomial distribution, ie~$V_{K, m, 1} \equiv B_{K, 1/m}$ for any concentration parameter $\alpha>0$.
+We will see in section~\ref{sec:binomial} that under scenario I the visual inference distribution is the same as the Binomial distribution, ie~$V_{K, m, 1} \equiv B_{K, 1/m}$ for any concentration parameter $\alpha>0$.
 For scenarios II and III the number of picks of the data plot does not follow a binomial distribution, as can also be seen from the simulation results shown in table~\ref{tab:nobinom}, consisting of a side-by-side comparison of the probability to observe exactly $x$ data detections (out of 10 evaluations) under each of the three different scenarios. %For the purpose of this paper we will only consider $V$ distributions for lineups of size $m=20$.
 
 
@@ -200,7 +200,7 @@ For scenarios II and III the number of picks of the data plot does not follow a 
 For a lineup of size $m$ let $X_i$ $i = 1, ..., m$ be the number of times that panel \#$i$ is identified as the most different out of $K$ evaluations (therefore $0 \le X_i \le K, \sum_i X_i = K$). Then the vector
  $X = (X_1, ..., X_m)$ is distributed according to a Multinomial distribution with probability vector $p = (p_1, ..., p_m)$, i.e.\ $0 \le p_i \le 1, \sum_i p_i = 1$. $p$ is therefore an element of the $(m-1)$-dimensional simplex $S(m-1)$.
 
-We will assume that under the null distribution $p$ has a symmetric (aslo called \emph{flat}) Dirichlet distribution $Dir(\alpha)$, with $\alpha > 0$, i.e.\ all concentration rates $\alpha_i$ are identical.
+We will assume that under the null distribution $p$ has a symmetric (also called \emph{flat}) Dirichlet distribution $Dir(\alpha)$, with $\alpha > 0$, i.e.\ all concentration rates $\alpha_i$ are identical.
 
 The density of a flat $Dir(\alpha)$ is given as
 \[
@@ -211,8 +211,8 @@ For all  Dirichlet distributions hold, that the margins $p_i$ are distributed ac
 
 \hh{XXX what meaning does the rate $\alpha$ have in the lineup setting? I would like to be able to say that $m\alpha$ is the number of 'interesting' looking null plots that we see on average in a lineup of size $m$. }
 
-Figure~\ref{fig:simplex} shows examples of three Dirichlet distributions on $S(2)$ with different rates. Because we are dealing with a symmetric Dirichlet distribution, we can order each sample's values from highest to lowest. This forces all samples to appear in just one segment of the simplex (see Figure~\ref{fig:simplex.sorted}) and we can visualise each sample as a non-increasing line in a parallel coordinate plot where each of the margins represents one axis. Now the concentration parameter $\alpha$ corresponds to the rate at which these lines decrease: for $\alpha \to 0$ the Dirichlet distribution converges to a Dirac delta distribution, which in the sorted situation corresponds to $p(1) = 1$, while for  $\alpha to \infty$ all lines flatten out to a line in $1/m$.
-Note that the vsiualisation approach based on parallel coordinate plots is readily extensible for higher number of dimensions.
+Figure~\ref{fig:simplex} shows examples of three Dirichlet distributions on $S(2)$ with different rates. Because we are dealing with a symmetric Dirichlet distribution, we can order each sample's values from highest to lowest. This forces all samples to appear in just one segment of the simplex (see Figure~\ref{fig:simplex.sorted}) and we can visualize each sample as a non-increasing line in a parallel coordinate plot where each of the margins represents one axis. Now the concentration parameter $\alpha$ corresponds to the rate at which these lines decrease: for $\alpha \to 0$ the Dirichlet distribution converges to a Dirac delta distribution, which in the sorted situation corresponds to $p(1) = 1$, while for  $\alpha to \infty$ all lines flatten out to a line in $1/m$.
+Note that the visualization approach based on parallel coordinate plots is readily extensible for higher number of dimensions.
 
 \begin{figure}
 \begin{subfigure}[t]{\textwidth}
@@ -363,7 +363,7 @@ ggplot(data=xmDistr, aes(x=x, y=prob)) +
 \end{figure}
 
 
-\subsection{Scenario I}
+\subsection{Scenario I}\label{sec:binomial}
 Let us assume that the lineups in the study are administered such that each lineup is only shown to one participant. This is only practical, if we have a way to `produce' data, i.e. we are in a situation where we can either use sampling or create data from a model.
 Then $X$, the number of times the data was identified from the lineup in $K$ independent evaluations, is given as the sum of Bernoulli variables $X_i$, such that
 $X = \sum_{i=1}^K X_i$ with $X_i \mid p_i \sim \text{Binom}_{1, p_i}$.
@@ -381,7 +381,7 @@ P(X_i = k) &=&  \frac{1}{B(\alpha, (m-1)\alpha)} B(k + \alpha, 1- k + (m-1)\alph
 \end{eqnarray*}
 
 \subsection{Scenario II}
-Scenario II is the situation, where we keep the same data plot in the lineup, but exchange the null plots. The main idea in analysing this scenario is to use the different sets of nulls for estimating one overall concentration parameter for $\alpha$ using an ML approach with weights according to the number of evaluations available for each lineup. We can then compute one overall $p$-value based on the number of data detection across all lineups. \hh{XXX there is a bit of a problem with dependence. The data detections come from a mix of different lineups, so there is a bit of a dependence/independence issue going on, that I'd still like to look into. XXX The overall p-value should not be very different from the individual $p$-values we get by assuming each of the lineups was done under scenario III. }
+Scenario II is the situation, where we keep the same data plot in the lineup, but exchange the null plots. The main idea in analyzing this scenario is to use the different sets of nulls for estimating one overall concentration parameter for $\alpha$ using an ML approach with weights according to the number of evaluations available for each lineup. We can then compute one overall $p$-value based on the number of data detection across all lineups. \hh{XXX there is a bit of a problem with dependence. The data detections come from a mix of different lineups, so there is a bit of a dependence/independence issue going on, that I'd still like to look into. XXX The overall p-value should not be very different from the individual $p$-values we get by assuming each of the lineups was done under scenario III. }
 
 \section{Estimating the concentration parameter}
 
@@ -584,7 +584,7 @@ qplot(ours, sirt, data=res, alpha=I(.2)) +
 
 summary(res)
 @
-\caption{Comparison of sirt's estimation of $\alpha$ compared to the one described above (aka as `ours'). The true parameter value is denoted by the orange lines. It is a bit surprising, that the sirt implementation of dirichlet.mle overestimates the concentration paramater so much. }
+\caption{Comparison of sirt's estimation of $\alpha$ compared to the one described above (aka as `ours'). The true parameter value is denoted by the orange lines. It is a bit surprising, that the sirt implementation of dirichlet.mle overestimates the concentration parameter so much. }
 \end{figure}
 
 Another advantage of our implementation is the fact that we can base our estimate on a single instance (such as we would have for just one lineup). This is shown in the density plot
