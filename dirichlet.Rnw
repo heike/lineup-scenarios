@@ -121,7 +121,7 @@ library(xtable)
 @
 
 <<function, echo=FALSE>>=
-alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
+alpha.ml <- function(p, weight=NULL, eps=10^(-7)) {
   # matrix p
   if (is.null(dim(p))) {
     m <- length(p)
@@ -134,10 +134,11 @@ alpha.ml <- function(p, weight=NULL, eps=10^(-5)) {
   if (is.null(weight)) weight <- rep(1, n)
   else n <- sum(weight)
 
+  weight <- weight/sum(weight)
   ps <- p
   ps[p < eps] <- eps # make sure we don't take the log of 0
   ps <- ps/rowSums(ps)
-  logp <- sum(weight*rowSums(log(ps)))/(m*n)
+  logp <- sum(weight*rowSums(log(ps)))/m
   ml <- function(alpha) {
     digamma(alpha) - digamma(alpha*m) - logp
   }
@@ -534,7 +535,7 @@ By induction over $K$ therefore follows that $P(X^{(K)} = x)$ is a probability m
 % &=& \frac{\Gamma(\alpha) \Gamma(1 + (m-1)\alpha) \Gamma(m\alpha)}{ \Gamma(\alpha + 1 + (m-1)\alpha ) \Gamma(\alpha) \Gamma((m-1)\alpha)}
 % \begin{eqnarray*}
 
-\subsection{Expected value of the number of data detection in scenario III under the null hypothesis}\label(sec:expected)
+\subsection{Expected value of the number of data detection in scenario III under the null hypothesis}\label{sec:expected}
 For the expected number of  data detections in $K$ evaluations of scenario III under the null hypothesis we get the following recursive expression:
 \begin{eqnarray*}
 E[X^{(K)}] &=& \sum_{x = 0}^K x P(X{(K)} = x) = \sum_{x = 1}^K x P(X{(K)} = x) \\
@@ -553,7 +554,7 @@ Let $P_1, ..., P_n$ be the vectors of observed picking probabilities for $n$ lin
 Assuming a symmetric Dirichlet distribution we estimate the concentration parameter $\alpha$ using a maximum likelihood approach as:
 \begin{eqnarray*}
 {\cal L}(\alpha; P_1, ..., P_n) &=& \prod_{j=1}^n
-\frac{\Gamma(\alpha m_o)}{\Gamma(\alpha)^{m_o}} \prod_{j=1}^{m_o} p_{ij}^{\alpha-1} = \frac{\Gamma(\alpha {m_o})^n}{\Gamma(\alpha)^{m_on}} \prod_{j=1}^n \prod_{i=1}^{m_o} p_{ij}^{\alpha-1}
+\frac{\Gamma(\alpha m_o)}{\Gamma(\alpha)^{m_o}} \prod_{i=1}^{m_o} p_{ij}^{\alpha-1} = \frac{\Gamma(\alpha {m_o})^n}{\Gamma(\alpha)^{m_on}} \prod_{i=1}^n \prod_{i=1}^{m_o} p_{ij}^{\alpha-1}
 \end{eqnarray*}
 
 The corresponding log likelihood function is then
@@ -566,28 +567,38 @@ Let $\psi(x)$ denote the \emph{digamma} function. Digamma is defined as the deri
 \]
 With this definition the maximum likelihood estimate $\hat{\alpha}$ of the concentration parameter $\alpha$ is the solution to
 \[
+\label{eq:ml1} \tag{ML1}
 \psi(\alpha) - \psi({m_o}\alpha) = \frac{1}{{m_o}n} \sum_{i,j} \log p_{ij}
 \]
 
+There are several advantages to estimating a single concentration parameter as opposed to averaging across a vector of concentration parameters $\alpha_i$, $i = 1, ..., m_o$, (ML2) as proposed by \citet{minka}. Most importantly, the ML estimate of a single concentration parameter is less biased than the estimate based on the average of $\alpha_i$, as can be seen in Figure~\ref{fig:mls}.
+Another advantage of estimating a single concentration parameter directly, is that the estimate can be based on a single instance (such as we would have for just one lineup). 
+
 \begin{figure}
-<<echo=FALSE, fig.width=6, fig.height=6, out.width='.5\\textwidth'>>=
+<<echo=FALSE, fig.width=7, fig.height=4, out.width='.75\\textwidth'>>=
 set.seed(20140501)
 alpha <- 0.3
 res <- 1:1000 %>% purrr::map_df(function(i) {
   ps <- gtools::rdirichlet(5, alpha=rep(alpha, 20))
-  data.frame(ours=alpha.ml(p=ps), sirt=sirt::dirichlet.mle(ps)$alpha0/20)
+  data.frame(ML1=alpha.ml(p=ps), ML2=sirt::dirichlet.mle(ps, eps=10^-7)$alpha0/20)
 })
-qplot(ours, sirt, data=res, alpha=I(.2)) +
-  geom_vline(aes(xintercept=alpha), colour="orange", size=1) +
-  geom_hline(aes(yintercept=alpha), colour="orange", size=1) +
-  theme_bw()
+res$ids <- 1:nrow(res)
+res2 <- tidyr::gather(res, key=method, value=value, -ids)
+qplot(value, geom="density", data=res2, 
+      fill=I("grey70"), alpha=I(.5), colour=I("grey50"))  + 
+  geom_vline(aes(xintercept=alpha), colour="grey30", size=.5) +
+  geom_text(x=alpha, y = 12.5, label=expression("alpha=",alpha), 
+            colour="grey30", size=5, data=data.frame()) +
+  facet_grid(.~method) + ggplot2::theme_bw() + 
+  xlab("Estimates of concentration parameter") + 
+  scale_x_continuous(breaks=c(alpha, c(0,2,4,6)/10), 
+                     labels=c(expression(alpha), c(0,2,4,6)/10))
 
-summary(res)
+# summary(res)
 @
-\caption{Comparison of sirt's estimation of $\alpha$ compared to the one described above (aka as `ours'). The true parameter value is denoted by the orange lines. It is a bit surprising, that the sirt implementation of dirichlet.mle overestimates the concentration parameter so much. }
+\caption{\label{fig:mls} Comparison of estimates of concentration parameter $\alpha$ using methods ML1 (direct estimation) and ML2 (average of $\hat{\alpha}_i, i = 1, ..., m_o$) based on five instances of P each.}
 \end{figure}
 
-Another advantage of our implementation is the fact that we can base our estimate on a single instance (such as we would have for just one lineup). This is shown in the density plot
 
 \begin{figure}
 <<density-1p, echo=FALSE, fig.width=6, fig.height=4, out.width='.5\\textwidth'>>=
@@ -595,15 +606,20 @@ set.seed(20140501)
 alpha <- 0.3
 res <- 1:1000 %>% purrr::map(function(i) {
   ps <- gtools::rdirichlet(1, alpha=rep(alpha, 20))
+#  sirt::dirichlet.simul( alpha=matrix(rep(alpha, 1*20), ncol=20) )
   alpha.ml(p=ps)
 }) %>% unlist
-qplot(res, geom="density", fill=I("grey50")) +
-  geom_vline(aes(xintercept=alpha), colour="orange", size=1) +
-  theme_bw()
+qplot(res, geom="density", fill=I("grey70"), alpha=I(.5), colour=I("grey50"))  + 
+  geom_vline(aes(xintercept=alpha), colour="grey30", size=1) +
+  ggplot2::theme_bw() +
+    xlab("Estimates of concentration parameters") + 
+  scale_x_continuous(breaks=c(alpha, c(0,2,4,6,8)/10), 
+                     labels=c(expression(alpha), c(0,2,4,6)/10))
 
-summary(res)
+
+#summary(res)
 @
-\caption{Density plots of estimates of the concentration parameter $\alpha$ based on 1,000 single instances of $P$. }
+\caption{Density plots of ML1 estimates of the concentration parameter $\alpha$ based on 1,000 single instances of $P$. }
 \end{figure}
 
 \subsubsection*{Variation of the estimation in the presence of weights}
@@ -622,7 +638,7 @@ The ML estimate of the concentration parameter $\alpha$ then becomes the solutio
 \[
 \psi(\alpha) - \psi({m_o}\alpha) = \frac{1}{{m_o} w} \sum_{i,j} w_j \log p_{ij}.
 \]
-What becomes obvious from the expression is that the concentration parameter is independent of the overall sum of the weights $w$, and only relative differences between the $w_j$ are regarded.
+What is obvious from the expression is that the concentration parameter is independent of the overall sum of the weights $w$, and only relative differences between the $w_j$ are regarded.
 
 \subsection{Summary of all concentration parameters and $p$-values}
 
