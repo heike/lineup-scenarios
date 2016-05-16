@@ -435,63 +435,6 @@ xtable(ns, digits=c(0,0,0, 1, 4,5))
 
 
 
-\hh{XXX what is the distribution of the p values for the number of picks of  null plots? It should be close to a uniform distribution. But it looks much closer to a beta distribution.}
-
-\subsection{Empirical distribution of the number of null plot picks}
-
-<<probs-null, echo=FALSE, results='asis'>>=
-nulls <- bigelect %>% filter(!correct) %>% group_by(param_value, response_no) %>%
-  summarize(
-    pick = sum(weight, na.rm=T)
-  )
-nulls <- nulls %>% group_by(param_value) %>%
-  mutate(
-    n = sum(pick, na.rm=T)
-  )
-nulls <- merge(nulls, ns[, c("param_value", "alpha")], by="param_value")
-
-# refit the dirichlet based on five means
-nulls$perc <- with(nulls, pick/n)
-null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0) # filling with 0 isn't quite right
-one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
-one_par$alpha0/19
-ns$alpha.ours <- 1:nrow(null_means) %>% purrr::map(function(i) alpha.ml(null_means[i,2:21])) %>% unlist
-ns$alpha.one.ours <- alpha.ml(null_means[,2:21], weight=ns$n-ns$detected)
-
-ns$dirprob2 <- 1:nrow(ns) %>%
-  purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=one_par$alpha0/19)) %>% unlist()
-ns$pval <- 1:nrow(ns) %>%
-  purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.ours[i])) %>% unlist()
-ns$pval2 <- 1:nrow(ns) %>%
-  purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.one.ours[i])) %>% unlist()
-ns <- ns %>% select(-c(alpha, dirprob, dirprob2))
-xtable(ns, digits=c(0,0,0,1,4,4,4,4))
-pval3(sum(ns$detected), K=sum(ns$n), alpha=ns$alpha.one.ours[1])
-@
-
-\[
-P( \min_i X_i \le x) = 1 - (1-x)^{m-1}.
-\]
-We are really dealing with Beta distributed variables $X_i$. The resulting probabilities actually look more like a sample from a Beta distribution.
-
-
-\begin{figure}
-\centering
-<<ex-summary, echo=FALSE, fig.width=8, fig.height=3, out.width='.8\\textwidth'>>=
-ps <- pars %>% purrr::map(.f = function(x) x$xsi) %>% data.frame()
-alphas <- tidyr::gather(ps, key=lineup, value=prob)
-
-ps2 <- pars %>% purrr::map(.f = function(x) names(x$xsi)) %>% data.frame()
-names <- tidyr::gather(ps2, key=lineup, value=name)
-alphas$response_no <- names$name
-# not sure how the xsi relate to the probabilities ...
-qplot(param_value, perc, data=nulls) + theme_bw() + ylab("Probabilities p") +xlab("") +
-  geom_label(aes(label=response_no), nudge_x=0.2, data=subset(nulls, perc > 0.15))
-
-@
-\caption{Empirical probabilities $p_i$ for each lineup. All lineups have some null plots that are high in the number of picks.}
-\end{figure}
-
 
 \section{Derivations}
 
@@ -614,7 +557,7 @@ qplot(res, geom="density", fill=I("grey70"), alpha=I(.5), colour=I("grey50"))  +
   ggplot2::theme_bw() +
     xlab("Estimates of concentration parameters") + 
   scale_x_continuous(breaks=c(alpha, c(0,2,4,6,8)/10), 
-                     labels=c(expression(alpha), c(0,2,4,6)/10))
+                     labels=c(expression(alpha), c(0,2,4,6,8)/10))
 
 
 #summary(res)
@@ -710,6 +653,80 @@ qplot(example, pval, data=ns, geom="jitter", width=0.2) +
 \end{subfigure}
 \caption{\label{fig:comparisons} Summaries of concentration parameters and $p$-values based on individual lineups (dark circles) and overall values for each of the examples (colored crosses).}
 \end{figure}
+
+\section{Empirical distribution of the number of null plot picks}
+
+\hh{XXX what is the distribution of the p values for the number of picks of  null plots? It is not a uniform distribution, because we observe data for a minimums/maximums decision}
+
+Let $X_i$ be the random variable describing the number of times that panel \#$i$ was picked in $K$ evaluations of the lineup.
+Let $q_i$ be the corresponding probability to observe at least $x_i$ number of picks of panel \#$i$.
+\[
+  q_i = P(X_i \ge x_i) =  \sum_{k = x_i}^K {K \choose k} \frac{B\left(x_i+\alpha, K-x_i + (m-1)\alpha \right)}{B\left(\alpha, (m-1)\alpha\right)}
+  \]
+Note that for the data plot this corresponds to the visual $p$-value.
+
+Because the question during the evaluation process is asking the participant to identify an extreme plot, typically  ``Which plot is the most different?", we are observing data from a minimums distribution:
+
+
+<<probs-null, echo=FALSE, results='asis'>>=
+nulls <- bigelect %>% filter(!correct) %>% group_by(param_value, response_no) %>%
+summarize(
+pick = sum(weight, na.rm=T)
+)
+nulls <- nulls %>% group_by(param_value) %>%
+mutate(
+n = sum(pick, na.rm=T)
+)
+nulls <- merge(nulls, ns[, c("param_value", "alpha")], by="param_value")
+
+ns <- bigelect %>% group_by(param_value) %>% summarize(
+  n=sum(weight),
+  detected=sum(weight[response_no==plot_location])
+)
+
+# refit the dirichlet based on five means
+nulls$perc <- with(nulls, pick/n)
+null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0) # filling with 0 isn't quite right
+one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
+one_par$alpha0/19
+ns$alpha.ours <- 1:nrow(null_means) %>% purrr::map(function(i) alpha.ml(null_means[i,2:21])) %>% unlist
+ns$alpha.one.ours <- alpha.ml(null_means[,2:21], weight=ns$n-ns$detected)
+
+ns$dirprob2 <- 1:nrow(ns) %>%
+purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=one_par$alpha0/19)) %>% unlist()
+ns$pval <- 1:nrow(ns) %>%
+purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.ours[i])) %>% unlist()
+ns$pval2 <- 1:nrow(ns) %>%
+purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.one.ours[i])) %>% unlist()
+ns <- ns %>% select(-c(alpha, dirprob2))
+xtable(ns, digits=c(0,0,0,1,4,4,4,4))
+pval3(sum(ns$detected), K=sum(ns$n), alpha=ns$alpha.one.ours[1])
+@
+
+\[
+P( \min_i X_i \le x) = 1 - (1-x)^{m-1}.
+\]
+We are really dealing with Beta distributed variables $X_i$. The resulting probabilities actually look more like a sample from a Beta distribution.
+
+
+\begin{figure}
+\centering
+<<ex-summary, echo=FALSE, fig.width=8, fig.height=3, out.width='.8\\textwidth'>>=
+ps <- pars %>% purrr::map(.f = function(x) x$xsi) %>% data.frame()
+alphas <- tidyr::gather(ps, key=lineup, value=prob)
+
+ps2 <- pars %>% purrr::map(.f = function(x) names(x$xsi)) %>% data.frame()
+names <- tidyr::gather(ps2, key=lineup, value=name)
+alphas$response_no <- names$name
+# not sure how the xsi relate to the probabilities ...
+qplot(param_value, perc, data=nulls) + theme_bw() + ylab("Probabilities p") +xlab("") +
+geom_label(aes(label=response_no), nudge_x=0.2, data=subset(nulls, perc > 0.15))
+
+@
+\caption{Empirical probabilities $p_i$ for each lineup. All lineups have some null plots that are high in the number of picks.}
+\end{figure}
+
+
 \bibliographystyle{asa}
 \bibliography{references}
 
