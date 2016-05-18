@@ -207,6 +207,7 @@ The density of a flat $Dir(\alpha)$ is given as
 \[
 f(p_1, ..., p_{m-1}; \alpha) = \frac{\Gamma(\alpha m)}{\Gamma(\alpha)^m} \prod_{i=1}^{m}p_i^{\alpha-1}.
 \]
+\cgj{Sorry to be grouchy - checked this for alpha=1. Does not look like a density - perhaps need to divide by volume of simplex?}
 When $\alpha=1$, the symmetric Dirichlet distribution is the uniform distribution on the $(m-1)$ dimensional simplex. For $\alpha < 1$ the mass of the distribution is along the edges of the simplex, i.e.\ most values $p_i$ will be close to zero. For $\alpha > 1$ most values $p_i$ will be similar, with a mass in the middle of the simplex.
 For all  Dirichlet distributions hold, that the margins $p_i$ are distributed according to a Beta distribution, which in the case of a symmetric Dirichlet distribution simplify to $p_i \sim \text{Beta}\left(\alpha, (m-1)\alpha\right)$. In the symmetric case, we also know that $E[p_i] = 1/m$, i.e.\ the expected value of the probability to pick panel \#$i$ only depends on the size $m$ of the lineup.
 
