@@ -2,6 +2,7 @@
 % \usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
 % \geometry{letterpaper}                   % ... or a4paper or a5paper or ...
 %\usepackage{graphicx}
+\usepackage{xcolor} % creates option clash, but still works
 \usepackage[font=small,skip=5pt]{caption}
 \usepackage{subcaption}
 \usepackage{afterpage}
@@ -207,8 +208,11 @@ The density of a flat $Dir(\alpha)$ is given as
 \[
 f(p_1, ..., p_{m-1}; \alpha) = \frac{\Gamma(\alpha m)}{\Gamma(\alpha)^m} \prod_{i=1}^{m}p_i^{\alpha-1}.
 \]
-\cgj{Sorry to be grouchy - checked this for alpha=1. Does not look like a density - perhaps need to divide by volume of simplex?}
-When $\alpha=1$, the symmetric Dirichlet distribution is the uniform distribution on the $(m-1)$ dimensional simplex. For $\alpha < 1$ the mass of the distribution is along the edges of the simplex, i.e.\ most values $p_i$ will be close to zero. For $\alpha > 1$ most values $p_i$ will be similar, with a mass in the middle of the simplex.
+%\cgj{Sorry to be so picky - checked this for alpha=1. Does not look like a density - perhaps need to multiply by volume of simplex? - XXX checked and looks OK}
+
+When $\alpha=1$, the symmetric Dirichlet distribution is the uniform distribution on the $(m-1)$ dimensional simplex.
+\cgj{In fact, for $\alpha = 1$ the density becomes a constant equal to ${(m-1)!}$. This is the inverse of the volume of  simplex $S(m-1)$.}
+For $\alpha < 1$ the mass of the distribution is along the edges of the simplex, i.e.\ most values $p_i$ will be close to zero. For $\alpha > 1$ most values $p_i$ will be similar, with a mass in the middle of the simplex.
 For all  Dirichlet distributions hold, that the margins $p_i$ are distributed according to a Beta distribution, which in the case of a symmetric Dirichlet distribution simplify to $p_i \sim \text{Beta}\left(\alpha, (m-1)\alpha\right)$. In the symmetric case, we also know that $E[p_i] = 1/m$, i.e.\ the expected value of the probability to pick panel \#$i$ only depends on the size $m$ of the lineup.
 
 \hh{XXX what meaning does the rate $\alpha$ have in the lineup setting? I would like to be able to say that $m\alpha$ is the number of 'interesting' looking null plots that we see on average in a lineup of size $m$. }
