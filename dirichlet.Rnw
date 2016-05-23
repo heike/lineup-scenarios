@@ -170,7 +170,9 @@ ing the ‘interesting’ feature in the data is inserted randomly among a set o
 1
 creating a lineup, and often times it is the null model that introduces some restrictions towards the features we can test.
 In most experimental situations, lineups of size m = 20 are used. This size is convenient, because of its corresponding type I error rate (ie the probability of accidentally identifying the data plot, when guessing) of 1/20 = 0.05 based on a single evaluation. A major limiting factor in presenting lineups to participants in a study is mental fatigue, which sets in earlier for larger sized lineups because of the increased cognitive load. It is therefore of interest to investigate the option of using smaller sized lineups for studies. The smallest practical lineup size is three – ie a lineup consisting of two null plots and a randomly inserted data plot.
-When drawing inference in the setting of a visual triangle test, we have to further consider the exact procedure with which we collect information from  observers. In this paper, we want to distinguish between  three main scenarios:
+When drawing inference in the setting of a visual triangle test, 
+\cgj{triangle? this sentence is about general lineups}
+we have to further consider the exact procedure with which we collect information from  observers. In this paper, we want to distinguish between  three main scenarios:
 
 \begin{itemize}
 \item Scenario I\\
@@ -211,9 +213,9 @@ f(p_1, ..., p_{m-1}; \alpha) = \frac{\Gamma(\alpha m)}{\Gamma(\alpha)^m} \prod_{
 %\cgj{Sorry to be so picky - checked this for alpha=1. Does not look like a density - perhaps need to multiply by volume of simplex? - XXX checked and looks OK}
 
 When $\alpha=1$, the symmetric Dirichlet distribution is the uniform distribution on the $(m-1)$ dimensional simplex.
-\cgj{In fact, for $\alpha = 1$ the density becomes a constant equal to ${(m-1)!}$. This is the inverse of the volume of  simplex $S(m-1)$.}
+\cgj{In fact, for $\alpha = 1$ the density becomes a constant equal to ${(m-1)!}$. This is the inverse of the volume of the simplex $S(m-1)$.}
 For $\alpha < 1$ the mass of the distribution is along the edges of the simplex, i.e.\ most values $p_i$ will be close to zero. For $\alpha > 1$ most values $p_i$ will be similar, with a mass in the middle of the simplex.
-For all  Dirichlet distributions hold, that the margins $p_i$ are distributed according to a Beta distribution, which in the case of a symmetric Dirichlet distribution simplify to $p_i \sim \text{Beta}\left(\alpha, (m-1)\alpha\right)$. In the symmetric case, we also know that $E[p_i] = 1/m$, i.e.\ the expected value of the probability to pick panel \#$i$ only depends on the size $m$ of the lineup.
+For all  Dirichlet distributions, the margins $p_i$ are distributed according to a Beta distribution, which in the case of a symmetric Dirichlet distribution simplify to $p_i \sim \text{Beta}\left(\alpha, (m-1)\alpha\right)$. In the symmetric case, we also know that $E[p_i] = 1/m$, i.e.\ the expected value of the probability to pick panel \#$i$ only depends on the size $m$ of the lineup.
 
 \hh{XXX what meaning does the rate $\alpha$ have in the lineup setting? I would like to be able to say that $m\alpha$ is the number of 'interesting' looking null plots that we see on average in a lineup of size $m$. }
 
