@@ -260,7 +260,7 @@ qplot(data=betas, p, y=density, geom="polygon", fill=I("grey50"), alpha=I(.8), c
 
 \begin{figure}
 \begin{subfigure}[t]{\textwidth}
-\caption{Dirichlet samples ordered from highest to lowest values. }
+\caption{Ternary displays \citep{ggtern} \hh{XXX add citation to Graham's work} of dirichlet samples ordered from highest to lowest values. }
 <<simplex-sorted, echo=FALSE, out.width='\\textwidth', fig.width=12, fig.height=4>>=
 simplex$id <- 1:nrow(simplex)
 dirichlets <- simplex %>%
@@ -570,7 +570,9 @@ qplot(res, geom="density", fill=I("grey70"), alpha=I(.5), colour=I("grey50"))  +
   scale_x_continuous(breaks=c(alpha, c(0,2,4,6,8)/10), 
                      labels=c(expression(alpha), c(0,2,4,6,8)/10))
 
-
+#' library(fitdistrplus)
+#' distr <- fitdist(res, "lnorm")
+#' plot(distr)
 #summary(res)
 @
 \caption{Density plots of ML1 estimates of the concentration parameter $\alpha$ based on 1,000 single instances of $P$. }
