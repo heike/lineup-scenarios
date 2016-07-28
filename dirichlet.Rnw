@@ -524,7 +524,7 @@ With this definition the maximum likelihood estimate $\hat{\alpha}$ of the conce
 There are several advantages to estimating a single concentration parameter as opposed to averaging across a vector of concentration parameters $\alpha_i$, $i = 1, ..., m_o$, (ML2) as proposed by \citet{minka}. Most importantly, the ML estimate of a single concentration parameter is less biased than the estimate based on the average of $\alpha_i$, as can be seen in Figure~\ref{fig:mls}.
 Another advantage of estimating a single concentration parameter directly, is that the estimate can be based on a single instance (such as we would have for evaluations from just one lineup). 
 
-The package fitdistrplus \citep{fitdistrplus} unfortunately only allows fits for univariate distributions. \hh{XXX look into dirmult package}
+ \hh{XXX look into dirmult package}
 \begin{figure}
 <<echo=FALSE, fig.width=7, fig.height=4, out.width='.75\\textwidth'>>=
 set.seed(20140501)
@@ -597,6 +597,7 @@ The ML estimate of the concentration parameter $\alpha$ then becomes the solutio
 What is obvious from the expression is that the concentration parameter is independent of the overall sum of the weights $w$, and only relative differences between the $w_j$ are regarded.
 
 \subsection{Summary of all concentration parameters and $p$-values}
+An overview of all of the concentration parameters estimated from our lineup experiments are shown in Figure~\ref{fig:comparisons}.
 
 <<pvals,echo=FALSE, results='asis'>>=
 ns <- all %>% split(.$param_value) %>% purrr::map_df(
@@ -633,11 +634,12 @@ xpls <- all %>% split(.$example) %>% purrr::map_df(
                  )
       )
   }, .id="example")
-ns <- merge(ns, xpls, by="example")
+nsall <- merge(ns, xpls, by="example")
 @
 
+
 <<tab-alpha, echo=FALSE, results='hide', dependson='pvals'>>=
-xtable(ns[,-1], digits=c(0,0,0,1,4,4,4,4))
+xtable(nsall[,-1], digits=c(0,0,0,1,4,4,4,4))
 @
 
 \begin{figure}
@@ -645,8 +647,8 @@ xtable(ns[,-1], digits=c(0,0,0,1,4,4,4,4))
 \begin{subfigure}[t]{.45\linewidth}
 \caption{Concentration parameters}
 <<fig-alpha, echo=FALSE, dependson='pvals', out.width='\\linewidth'>>=
-ns$example <- reorder(ns$example, ns$alpha)
-qplot(example, alpha, data=ns) +
+nsall$example <- reorder(nsall$example, nsall$alpha)
+qplot(example, alpha, data=nsall) +
   ggplot2::theme_bw() + expand_limits(y=c(0,NA)) +
   geom_point(aes(y=alpha.overall), colour="orange", pch="x", size=5) +
   coord_flip() + xlab("") +
@@ -657,7 +659,7 @@ qplot(example, alpha, data=ns) +
 \caption{Visual $p$-values}
 <<fig-pvals, echo=FALSE, dependson='pvals', out.width='\\linewidth'>>=
 #ns$example <- reorder(ns$example, ns$alpha)
-qplot(example, pval, data=ns, geom="jitter", width=0.2) +
+qplot(example, pval, data=nsall, geom="jitter", width=0.2) +
   ggplot2::theme_bw() + expand_limits(y=c(0,NA)) +
   geom_point(aes(y=pval.overall), colour="orange", pch="x", size=5) +
   coord_flip() + xlab("") +
@@ -666,6 +668,27 @@ qplot(example, pval, data=ns, geom="jitter", width=0.2) +
 \end{subfigure}
 \caption{\label{fig:comparisons} Summaries of concentration parameters and $p$-values based on individual lineups (dark circles) and overall values for each of the examples (colored crosses).}
 \end{figure}
+
+All of the concentration parameters are centered around similar values. 
+Figure~\ref{fig:lognormal} shows a density plot of all estimates for the concentration parameter overlaid by a blue line showing the fit of a lognormal density \citep[using the {\tt fitdistrplus} package][]{fitdistrplus}. 
+
+\begin{figure}
+<<concentration-lognormal,results='asis', echo=FALSE, fig.width=5, fig.height=3, out.width='.5\\linewidth'>>=
+
+library(fitdistrplus)
+distr <- fitdist(nsall$alpha, "lnorm")
+distrfit <- data.frame(x = seq(0, .7, length=100))
+distrfit$fit <- dlnorm(distrfit$x, meanlog = distr$estimate[1], sdlog = distr$estimate[2])
+
+ggplot(data=nsall) + geom_density(aes(x=alpha), fill="grey75", bw=0.0425) + ggplot2::theme_bw() +
+  geom_line(aes(x=x, y=fit), data=distrfit, colour="steelblue")
+#plot(distr)
+@
+\caption{\label{fig:lognormal}Density plot of the estimates of the concentration parameter $\alpha$ of all of the lineup experiments. The blue line overlaid is the density of a log normal distribution fit to the same values. }
+\end{figure}
+
+Instead of a single value for the concentration parameter $\alpha$ we can use a lognormal distribution with hyper parameters $\mu$ and $\sigma$ and estimate the probability for success based on this distribution. For our study $\hat{\mu} =$\Sexpr{distr$estimate[1]} and $\hat{\sigma} =$\Sexpr{distr$estimate[2]}, which puts the median of the estimated lognormal distribution at \Sexpr{exp(distr$estimate[1])} and its mean at \Sexpr{exp(distr$estimate[1]+.5*distr$estimate[2]^2)}.
+
 
 \section{Empirical distribution of the number of null plot picks}
 
