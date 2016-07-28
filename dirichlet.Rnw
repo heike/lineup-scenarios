@@ -522,12 +522,16 @@ With this definition the maximum likelihood estimate $\hat{\alpha}$ of the conce
 \]
 
 There are several advantages to estimating a single concentration parameter as opposed to averaging across a vector of concentration parameters $\alpha_i$, $i = 1, ..., m_o$, (ML2) as proposed by \citet{minka}. Most importantly, the ML estimate of a single concentration parameter is less biased than the estimate based on the average of $\alpha_i$, as can be seen in Figure~\ref{fig:mls}.
-Another advantage of estimating a single concentration parameter directly, is that the estimate can be based on a single instance (such as we would have for just one lineup). 
+Another advantage of estimating a single concentration parameter directly, is that the estimate can be based on a single instance (such as we would have for evaluations from just one lineup). 
 
+The package fitdistrplus \citep{fitdistrplus} unfortunately only allows fits for univariate distributions. \hh{XXX look into dirmult package}
 \begin{figure}
 <<echo=FALSE, fig.width=7, fig.height=4, out.width='.75\\textwidth'>>=
 set.seed(20140501)
 alpha <- 0.3
+#Beta <- function(alpha) {prod(gamma(alpha))/gamma(sum(alpha)) } 
+#pdirichlet <- function(x, alpha) { 1/Beta(alpha)*prod(x^(alpha-1))}
+
 res <- 1:1000 %>% purrr::map_df(function(i) {
   ps <- gtools::rdirichlet(5, alpha=rep(alpha, 20))
   data.frame(ML1=alpha.ml(p=ps), ML2=sirt::dirichlet.mle(ps, eps=10^-7)$alpha0/20)
