@@ -2,7 +2,7 @@
 % \usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
 % \geometry{letterpaper}                   % ... or a4paper or a5paper or ...
 %\usepackage{graphicx}
-\usepackage{xcolor} % creates option clash, but still works
+%\usepackage{xcolor} % creates option clash, but still works
 \usepackage[font=small,skip=5pt]{caption}
 \usepackage{subcaption}
 \usepackage{afterpage}
@@ -522,7 +522,7 @@ With this definition the maximum likelihood estimate $\hat{\alpha}$ of the conce
 \]
 
 There are several advantages to estimating a single concentration parameter as opposed to averaging across a vector of concentration parameters $\alpha_i$, $i = 1, ..., m_o$, (ML2) as proposed by \citet{minka}. Most importantly, the ML estimate of a single concentration parameter is less biased than the estimate based on the average of $\alpha_i$, as can be seen in Figure~\ref{fig:mls}.
-Another advantage of estimating a single concentration parameter directly, is that the estimate can be based on a single instance (such as we would have for evaluations from just one lineup). 
+Another advantage of estimating a single concentration parameter directly, is that the estimate can be based on a single instance (such as we have for evaluations from just one lineup). 
 
  \hh{XXX look into dirmult package}
 \begin{figure}
@@ -689,6 +689,35 @@ ggplot(data=nsall) + geom_density(aes(x=alpha), fill="grey75", bw=0.0425) + ggpl
 
 Instead of a single value for the concentration parameter $\alpha$ we can use a lognormal distribution with hyper parameters $\mu$ and $\sigma$ and estimate the probability for success based on this distribution. For our study $\hat{\mu} =$\Sexpr{distr$estimate[1]} and $\hat{\sigma} =$\Sexpr{distr$estimate[2]}, which puts the median of the estimated lognormal distribution at \Sexpr{exp(distr$estimate[1])} and its mean at \Sexpr{exp(distr$estimate[1]+.5*distr$estimate[2]^2)}.
 
+Let us think of $\alpha$ as a random variable with a lognormal distribution, we can compute the probability of $X \ge x$ as 
+\begin{eqnarray*}
+P(X \ge x) &=& E \left[ P(X \ge x \mid \alpha)\right] \\
+&=& \int_0^\infty P(X \ge x \mid \alpha) f(\alpha) d\alpha,
+\end{eqnarray*}
+where $f(\alpha)$ is the density of the lognormal distribution:
+\[
+f(\alpha) = \frac{1}{\alpha \sigma_\alpha \sqrt{2\pi}} \exp \left[ - \frac{\log\alpha - \mu_\alpha}{2\sigma_\alpha^2}\right]. 
+\]
+For $\mu_\alpha$ and $\sigma_\alpha$ we use the estimates from the overall study as give above. However, the results are not particularly sensitive to the exact values of these hyperparameters. Figure~\ref{fig:hyper} gives a
+
+<<bayes, echo=FALSE>>=
+bayes <- function(x, K, m, mu = distr$estimate[1], sigma = distr$estimate[2]) {
+  alpha <- seq(10^-6, 3, by=0.005)
+#  alphaprobs <- alpha %>% purrr::map(.f=dlnorm, meanlog = distr$estimate[1], sdlog = distr$estimate[2]) %>% unlist()
+    alphaprobs <- alpha %>% purrr::map(.f=dlnorm, meanlog = mu, sdlog = sigma) %>% unlist()
+  probs <- alpha %>% purrr::map(.f=pval3, x=x, K=K, m=m) %>% unlist()
+  sum(probs*alphaprobs)/sum(alphaprobs)
+}
+
+nsall$pval.bayes <- 1:nrow(nsall) %>% purrr::map(.f = function(i) {
+  with(nsall, bayes(x=x[i], K=K[i], m=20))
+  }) %>% unlist()
+
+ggplot(data=nsall, aes(x = pval, pval.bayes)) + 
+  geom_abline() +
+  geom_point() + xlim(c(0, 0.1)) + ylim(c(0,0.1)) + 
+  geom_text(aes(label = param_value), data=subset(nsall, abs(pval-pval.bayes) > 0.01))
+@
 
 \section{Empirical distribution of the number of null plot picks}
 
@@ -761,6 +790,8 @@ geom_label(aes(label=response_no), nudge_x=0.2, data=subset(nulls, perc > 0.15))
 @
 \caption{Empirical probabilities $p_i$ for each lineup. All lineups have some null plots that are high in the number of picks.}
 \end{figure}
+
+
 
 
 \bibliographystyle{asa}
