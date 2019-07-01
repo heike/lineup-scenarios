@@ -170,7 +170,7 @@ ing the ‘interesting’ feature in the data is inserted randomly among a set o
 1
 creating a lineup, and often times it is the null model that introduces some restrictions towards the features we can test.
 In most experimental situations, lineups of size m = 20 are used. This size is convenient, because of its corresponding type I error rate (ie the probability of accidentally identifying the data plot, when guessing) of 1/20 = 0.05 based on a single evaluation. A major limiting factor in presenting lineups to participants in a study is mental fatigue, which sets in earlier for larger sized lineups because of the increased cognitive load. It is therefore of interest to investigate the option of using smaller sized lineups for studies. The smallest practical lineup size is three – ie a lineup consisting of two null plots and a randomly inserted data plot.
-When drawing inference in the setting of a visual triangle test, 
+When drawing inference in the setting of a visual triangle test,
 \cgj{triangle? this sentence is about general lineups}
 we have to further consider the exact procedure with which we collect information from  observers. In this paper, we want to distinguish between  three main scenarios:
 
@@ -235,7 +235,7 @@ levels(simplex$alphalabel) <- c("alpha: 1/3", "alpha: 1", "alpha: 3")
 
 ggtern::ggtern(aes(x=p1, y=p2, z=p3), data=simplex) +
   geom_point() + facet_wrap(~alphalabel, labeller="label_parsed") +
-  theme_bw() +
+#  theme_bw() +
   theme(panel.background=element_rect(colour="black"))
 @
 \end{subfigure}
@@ -274,7 +274,7 @@ simplex.sorted <- dirichlets %>%
 
 ggtern::ggtern(aes(x=p1, y=p2, z=p3), data=simplex.sorted) +
   geom_point(alpha=I(.2)) + facet_wrap(~alphalabel, labeller="label_parsed") +
-  theme_bw() +
+#  theme_bw() +
   theme(panel.background=element_rect(colour="black"))
 @
 \end{subfigure}
@@ -522,14 +522,14 @@ With this definition the maximum likelihood estimate $\hat{\alpha}$ of the conce
 \]
 
 There are several advantages to estimating a single concentration parameter as opposed to averaging across a vector of concentration parameters $\alpha_i$, $i = 1, ..., m_o$, (ML2) as proposed by \citet{minka}. Most importantly, the ML estimate of a single concentration parameter is less biased than the estimate based on the average of $\alpha_i$, as can be seen in Figure~\ref{fig:mls}.
-Another advantage of estimating a single concentration parameter directly, is that the estimate can be based on a single instance (such as we have for evaluations from just one lineup). 
+Another advantage of estimating a single concentration parameter directly, is that the estimate can be based on a single instance (such as we have for evaluations from just one lineup).
 
  \hh{XXX look into dirmult package}
 \begin{figure}
 <<echo=FALSE, fig.width=7, fig.height=4, out.width='.75\\textwidth'>>=
 set.seed(20140501)
 alpha <- 0.3
-#Beta <- function(alpha) {prod(gamma(alpha))/gamma(sum(alpha)) } 
+#Beta <- function(alpha) {prod(gamma(alpha))/gamma(sum(alpha)) }
 #pdirichlet <- function(x, alpha) { 1/Beta(alpha)*prod(x^(alpha-1))}
 
 res <- 1:1000 %>% purrr::map_df(function(i) {
@@ -538,14 +538,15 @@ res <- 1:1000 %>% purrr::map_df(function(i) {
 })
 res$ids <- 1:nrow(res)
 res2 <- tidyr::gather(res, key=method, value=value, -ids)
-qplot(value, geom="density", data=res2, 
-      fill=I("grey70"), alpha=I(.5), colour=I("grey50"))  + 
+res2 %>%
+  ggplot(aes( x = value)) +
+  geom_density(fill=I("grey70"), alpha=I(.5), colour=I("grey50"))  +
   geom_vline(aes(xintercept=alpha), colour="grey30", size=.5) +
-  geom_text(x=alpha, y = 12.5, label=expression("alpha=",alpha), 
+  geom_text(x=alpha, y = 12.5, label=expression("alpha=",alpha),
             colour="grey30", size=5, data=data.frame()) +
-  facet_grid(.~method) + ggplot2::theme_bw() + 
-  xlab("Estimates of concentration parameter") + 
-  scale_x_continuous(breaks=c(alpha, c(0,2,4,6)/10), 
+  facet_grid(.~method) + ggplot2::theme_bw() +
+  xlab("Estimates of concentration parameter") +
+  scale_x_continuous(breaks=c(alpha, c(0,2,4,6)/10),
                      labels=c(expression(alpha), c(0,2,4,6)/10))
 
 # summary(res)
@@ -563,11 +564,11 @@ res <- 1:1000 %>% purrr::map(function(i) {
 #  sirt::dirichlet.simul( alpha=matrix(rep(alpha, 1*20), ncol=20) )
   alpha.ml(p=ps)
 }) %>% unlist
-qplot(res, geom="density", fill=I("grey70"), alpha=I(.5), colour=I("grey50"))  + 
+qplot(res, geom="density", fill=I("grey70"), alpha=I(.5), colour=I("grey50"))  +
   geom_vline(aes(xintercept=alpha), colour="grey30", size=1) +
   ggplot2::theme_bw() +
-    xlab("Estimates of concentration parameters") + 
-  scale_x_continuous(breaks=c(alpha, c(0,2,4,6,8)/10), 
+    xlab("Estimates of concentration parameters") +
+  scale_x_continuous(breaks=c(alpha, c(0,2,4,6,8)/10),
                      labels=c(expression(alpha), c(0,2,4,6,8)/10))
 
 #' library(fitdistrplus)
@@ -669,8 +670,8 @@ qplot(example, pval, data=nsall, geom="jitter", width=0.2) +
 \caption{\label{fig:comparisons} Summaries of concentration parameters and $p$-values based on individual lineups (dark circles) and overall values for each of the examples (colored crosses).}
 \end{figure}
 
-All of the concentration parameters are centered around similar values. 
-Figure~\ref{fig:lognormal} shows a density plot of all estimates for the concentration parameter overlaid by a blue line showing the fit of a lognormal density \citep[using the {\tt fitdistrplus} package][]{fitdistrplus}. 
+All of the concentration parameters are centered around similar values.
+Figure~\ref{fig:lognormal} shows a density plot of all estimates for the concentration parameter overlaid by a blue line showing the fit of a lognormal density \citep[using the {\tt fitdistrplus} package][]{fitdistrplus}.
 
 \begin{figure}
 <<concentration-lognormal,results='asis', echo=FALSE, fig.width=5, fig.height=3, out.width='.5\\linewidth'>>=
@@ -689,18 +690,19 @@ ggplot(data=nsall) + geom_density(aes(x=alpha), fill="grey75", bw=0.0425) + ggpl
 
 Instead of a single value for the concentration parameter $\alpha$ we can use a lognormal distribution with hyper parameters $\mu$ and $\sigma$ and estimate the probability for success based on this distribution. For our study $\hat{\mu} =$\Sexpr{distr$estimate[1]} and $\hat{\sigma} =$\Sexpr{distr$estimate[2]}, which puts the median of the estimated lognormal distribution at \Sexpr{exp(distr$estimate[1])} and its mean at \Sexpr{exp(distr$estimate[1]+.5*distr$estimate[2]^2)}.
 
-Let us think of $\alpha$ as a random variable with a lognormal distribution, we can compute the probability of $X \ge x$ as 
+Let us think of $\alpha$ as a random variable with a lognormal distribution, we can compute the probability of $X \ge x$ as
 \begin{eqnarray*}
 P(X \ge x) &=& E \left[ P(X \ge x \mid \alpha)\right] \\
 &=& \int_0^\infty P(X \ge x \mid \alpha) f(\alpha) d\alpha,
 \end{eqnarray*}
 where $f(\alpha)$ is the density of the lognormal distribution:
 \[
-f(\alpha) = \frac{1}{\alpha \sigma_\alpha \sqrt{2\pi}} \exp \left[ - \frac{\log\alpha - \mu_\alpha}{2\sigma_\alpha^2}\right]. 
+f(\alpha) = \frac{1}{\alpha \sigma_\alpha \sqrt{2\pi}} \exp \left[ - \frac{\log\alpha - \mu_\alpha}{2\sigma_\alpha^2}\right].
 \]
-For $\mu_\alpha$ and $\sigma_\alpha$ we use the estimates from the overall study as give above. However, the results are not particularly sensitive to the exact values of these hyperparameters. Figure~\ref{fig:hyper} gives a
+For $\mu_\alpha$ and $\sigma_\alpha$ we use the estimates from the overall study as give above. However, the results are not particularly sensitive to the exact values of these hyperparameters. Figure~\ref{fig:hyper} gives an overview of the sensitivity of the results to the exact choice of hyperparameter. $\sigma_\alpha$ has a very small impact on the overall results (not shown)
 
-<<bayes, echo=FALSE>>=
+\begin{figure}
+<<bayes, echo=FALSE, fig.width=5, fig.height=5, out.width='.5\\linewidth'>>=
 bayes <- function(x, K, m, mu = distr$estimate[1], sigma = distr$estimate[2]) {
   alpha <- seq(10^-6, 3, by=0.005)
 #  alphaprobs <- alpha %>% purrr::map(.f=dlnorm, meanlog = distr$estimate[1], sdlog = distr$estimate[2]) %>% unlist()
@@ -713,11 +715,51 @@ nsall$pval.bayes <- 1:nrow(nsall) %>% purrr::map(.f = function(i) {
   with(nsall, bayes(x=x[i], K=K[i], m=20))
   }) %>% unlist()
 
-ggplot(data=nsall, aes(x = pval, pval.bayes)) + 
-  geom_abline() +
-  geom_point() + xlim(c(0, 0.1)) + ylim(c(0,0.1)) + 
-  geom_text(aes(label = param_value), data=subset(nsall, abs(pval-pval.bayes) > 0.01))
+ggplot(data=nsall, aes(x = pval, pval.bayes)) +
+  geom_abline() + ggplot2::theme_bw() +
+  geom_point() #+ #xlim(c(0, 0.1)) + ylim(c(0,0.1)) +
+#  geom_text(aes(label = param_value), data=subset(nsall, abs(pval-pval.bayes) > 0.01))
+
+#ggplot(data=nsall, aes(x = pval, pval.bayes)) +
+#  geom_abline() +
+#  geom_point() + xlim(c(0, 0.1)) + ylim(c(0,0.1)) +
+#  geom_text(aes(label = param_value), data=subset(nsall, abs(pval-pval.bayes) > 0.01))
+
 @
+\caption{\label{fig:bayes}Scatterplot of  $p$-values with $\alpha$ estimated from a single lineup (horizontal) versus being estimated using a Bayesian approach (vertical). All $p$-values are qualitatively similar.}
+\end{figure}
+
+\begin{figure}
+<<sensitivity, echo = FALSE>>=
+dframe <- data.frame(expand.grid(
+  mu=seq(-2.5,-1.5, by=0.1), sigma=seq(0.3, .7, by=0.05), grid=TRUE))
+
+dframe <- rbind(dframe, data.frame(mu=distr$estimate[1], sigma=distr$estimate[2], grid=FALSE))
+
+simul <- 1:nrow(dframe) %>% purrr::map(.f = function(j) {
+  1:nrow(nsall) %>% purrr::map(.f = function(i) {
+  with(nsall, bayes(x=x[i], K=K[i], m=20, mu=dframe$mu[j], sigma=dframe$sigma[j]))
+  }) %>% unlist()
+})
+results <- data.frame(dframe, t(as.matrix(data.frame(simul))), row.names=NULL) %>% gather(key=lineup, value=pval.bayes, -mu, -sigma, -grid)
+results$lineup <- with(results, reorder(lineup, pval.bayes, median))
+
+
+fit <- results %>% filter(!grid)
+names(fit)[5] <- "estimate"
+results <- merge(results, fit[,c("lineup", "estimate")], by="lineup")
+results$rel.diff <- with(results, abs(pval.bayes-estimate)/estimate)
+results$abs.diff <- with(results, abs(pval.bayes-estimate))
+
+ggplot(data=results %>% filter(grid), aes(x=lineup, y=pval.bayes)) +
+  geom_point(size=1) +
+  geom_line(aes(group=interaction(mu, sigma), colour = mu)) +
+  geom_line(group=1, colour = "red", data=results %>% filter(!grid)) +
+  ggplot2::theme_bw()
+@
+\caption{\label{fig:sensitive} P-values are calculated for a grid of hyperparameters $\mu_\alpha$ and $\sigma_\alpha$. The largest absolute differences in $p$-values appear for $p$-values between about 0.2 and 0.4. While the absolute differences are small for very small and very large $p$-values. At a value of about 0.125, the effect that the size of $\mu_alpha$ has on the $p$-value changes from pulling (slightly) towards  lower values as $\mu_alpha$ increases to pushing towards higher $p$-values.
+}
+\end{figure}
 
 \section{Empirical distribution of the number of null plot picks}
 
@@ -742,30 +784,17 @@ nulls <- nulls %>% group_by(param_value) %>%
 mutate(
 n = sum(pick, na.rm=T)
 )
-nulls <- merge(nulls, ns[, c("param_value", "alpha")], by="param_value")
+nulls <- merge(nulls, nsall[, c("param_value", "K", "alpha")], by="param_value")
 
-ns <- bigelect %>% group_by(param_value) %>% summarize(
-  n=sum(weight),
-  detected=sum(weight[response_no==plot_location])
-)
+pvals <- 1:nrow(nulls) %>% purrr::map_df(.f=function(i) {
+  pval <- pval3( x = nulls$pick[i]+1/20, K=nulls$n[i]+1, alpha=nulls$alpha[i])
+  pval.bayes <- bayes(x = nulls$pick[i], K=nulls$n[i],m=20)
+  data.frame(pval=pval, pval.bayes=pval.bayes)
+})
 
-# refit the dirichlet based on five means
-nulls$perc <- with(nulls, pick/n)
-null_means <- tidyr::spread(nulls[,c("param_value", "response_no", "perc")], response_no, perc, fill=0) # filling with 0 isn't quite right
-one_par <- sirt::dirichlet.mle(null_means[,2:21], weight=ns$n-ns$detected)
-one_par$alpha0/19
-ns$alpha.ours <- 1:nrow(null_means) %>% purrr::map(function(i) alpha.ml(null_means[i,2:21])) %>% unlist
-ns$alpha.one.ours <- alpha.ml(null_means[,2:21], weight=ns$n-ns$detected)
+res.nulls <- data.frame(nulls, pvals)
 
-ns$dirprob2 <- 1:nrow(ns) %>%
-purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=one_par$alpha0/19)) %>% unlist()
-ns$pval <- 1:nrow(ns) %>%
-purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.ours[i])) %>% unlist()
-ns$pval2 <- 1:nrow(ns) %>%
-purrr::map(function(i) pval3(ns$detected[i], K=ns$n[i], alpha=ns$alpha.one.ours[i])) %>% unlist()
-ns <- ns %>% select(-c(alpha, dirprob2))
-xtable(ns, digits=c(0,0,0,1,4,4,4,4))
-pval3(sum(ns$detected), K=sum(ns$n), alpha=ns$alpha.one.ours[1])
+qplot(data=res.nulls, geom="histogram", x=pval)
 @
 
 \[
