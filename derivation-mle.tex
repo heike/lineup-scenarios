@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\newcommand{\hh}[1]{{\color{magenta} #1}}
+\begin{document}
+
+\begin{align*}
+\mathscr{L}(\alpha|p) &= \prod_{j=1}^n \left(\frac{1}{B(\alpha)}\right)^{m_0} \prod_{i=1}^{m_0} p_{ij}^{\alpha - 1}\\
+& = \left(\frac{\Gamma(\alpha m_0)}{\left(\Gamma(\alpha)\right)^{m_0}}\right)^n \prod_{ij} p^{\alpha-1}_{ij}\\
+\log \mathscr{L}(\alpha|p) & = n \log \Gamma(\alpha m_0) - nm_0\log\Gamma(\alpha) + \sum_{ij}(\alpha-1)\log p_{ij}\\
+&    \text{So far, so good}\\
+\frac{d}{d\alpha}\log \mathscr{L}(\alpha|p) &= n\psi(\alpha m_0) - nm_0\psi(\alpha) + \sum_{ij} log p_{ij}\\
+0 &= n\psi(\alpha m_0) - nm_0\psi(\alpha) + \sum_{ij} \log p_{ij} \\
+nm_0\psi(\alpha) - n\psi(\alpha m_0) &= \sum_{ij} \log p_{ij}\\
+\psi(\alpha) - \frac{1}{m_0}\psi(\alpha m_0) & = \frac{1}{nm_0}\sum_{ij} \log p_{ij}\\&\text{(this is what I get)}\\
+\psi(\alpha) - \psi(\alpha m_0) & = \frac{1}{nm_0}\sum_{ij} \log p_{ij}\\&\text{(this is what is in the derivation)}
+\end{align*}
+
+Where did the extra $\frac{1}{m_0}$ go?
+
+
+\end{document}
